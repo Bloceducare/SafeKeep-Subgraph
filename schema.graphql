@@ -1,6 +1,29 @@
-type ExampleEntity @entity {
+# type ExampleEntity @entity {
+#   id: ID!
+#   count: BigInt!
+#   inheritor: Bytes! # address
+#   _amount: BigInt! # uint256
+# }
+
+type Token @entity {
   id: ID!
-  count: BigInt!
-  inheritor: Bytes! # address
-  _amount: BigInt! # uint256
+  balance: [TokenBalance!] @derivedFrom(field:"token")
+}
+
+type User @entity{
+  id: ID!
+  UserToken: [Token!]
+  UserInheritor: [Inheritor!] @derivedFrom(field:"owner")
+}
+
+type TokenBalance @entity{
+  id: ID!
+  token: Token!
+  amount: BigInt!
+}
+
+type Inheritor @entity{
+  id: ID!
+  inheritor: Bytes!
+  owner: User!
 }

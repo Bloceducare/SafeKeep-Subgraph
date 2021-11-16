@@ -1,4 +1,4 @@
-specVersion: 0.0.1
+specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
@@ -13,16 +13,9 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ClaimedEth
-        - EthAllocated
-        - EthDeposited
-        - OwnershipTransferred
-        - claimedTokens
-        - inheritorsAdded
-        - inheritorsRemoved
-        - tokenAllocated
-        - tokensDeposited
-        - vaultCreated
+        - User
+        - Inheritor
+        - Token
       abis:
         - name: SafeKeep
           file: ./abis/SafeKeep.json
