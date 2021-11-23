@@ -126,6 +126,23 @@ export class User extends Entity {
       this.set("UserInheritor", Value.fromStringArray(<Array<string>>value));
     }
   }
+
+  get Allocations(): string | null {
+    let value = this.get("Allocations");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set Allocations(value: string | null) {
+    if (!value) {
+      this.unset("Allocations");
+    } else {
+      this.set("Allocations", Value.fromString(<string>value));
+    }
+  }
 }
 
 export class TokenBalance extends Entity {
@@ -224,6 +241,87 @@ export class Inheritor extends Entity {
 
   set inheritor(value: Bytes) {
     this.set("inheritor", Value.fromBytes(value));
+  }
+
+  get owner(): string {
+    let value = this.get("owner");
+    return value!.toString();
+  }
+
+  set owner(value: string) {
+    this.set("owner", Value.fromString(value));
+  }
+}
+
+export class Allocation extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("inheritor", Value.fromBytes(Bytes.empty()));
+    this.set("token", Value.fromBytes(Bytes.empty()));
+    this.set("owner", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Allocation entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Allocation entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Allocation", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Allocation | null {
+    return changetype<Allocation | null>(store.get("Allocation", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get inheritor(): Bytes {
+    let value = this.get("inheritor");
+    return value!.toBytes();
+  }
+
+  set inheritor(value: Bytes) {
+    this.set("inheritor", Value.fromBytes(value));
+  }
+
+  get token(): Bytes {
+    let value = this.get("token");
+    return value!.toBytes();
+  }
+
+  set token(value: Bytes) {
+    this.set("token", Value.fromBytes(value));
+  }
+
+  get amount(): Array<BigInt> | null {
+    let value = this.get("amount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigIntArray();
+    }
+  }
+
+  set amount(value: Array<BigInt> | null) {
+    if (!value) {
+      this.unset("amount");
+    } else {
+      this.set("amount", Value.fromBigIntArray(<Array<BigInt>>value));
+    }
   }
 
   get owner(): string {

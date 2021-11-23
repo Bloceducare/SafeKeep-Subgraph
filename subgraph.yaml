@@ -16,6 +16,7 @@ dataSources:
         - User
         - Inheritor
         - Token
+        - Allocation
       abis:
         - name: SafeKeep
           file: ./abis/SafeKeep.json

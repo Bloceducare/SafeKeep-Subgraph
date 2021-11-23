@@ -14,6 +14,7 @@ type User @entity{
   id: ID!
   UserToken: [Token!]
   UserInheritor: [Inheritor!] @derivedFrom(field:"owner")
+  Allocations: Allocation @derivedFrom(field:"owner")
 }
 
 type TokenBalance @entity{
@@ -25,5 +26,13 @@ type TokenBalance @entity{
 type Inheritor @entity{
   id: ID!
   inheritor: Bytes!
+  owner: User!
+}
+
+type Allocation @entity{
+  id: ID!
+  inheritor: Bytes!
+  token: Bytes!
+  amount:[BigInt!]
   owner: User!
 }
