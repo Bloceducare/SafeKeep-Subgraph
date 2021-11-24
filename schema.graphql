@@ -5,22 +5,18 @@
 #   _amount: BigInt! # uint256
 # }
 
-type Token @entity {
-  id: ID!
-  balance: [TokenBalance!] @derivedFrom(field:"token")
-}
-
 type User @entity{
   id: ID!
   UserToken: [Token!]
   UserInheritor: [Inheritor!] @derivedFrom(field:"owner")
   Allocations: Allocation @derivedFrom(field:"owner")
+  StartingBalance: BigInt @derivedFrom(field: "StartingAmount")
 }
 
-type TokenBalance @entity{
+type Token @entity{
   id: ID!
-  token: Token!
-  amount: BigInt!
+  token: Bytes!
+  amount: [BigInt!]
 }
 
 type Inheritor @entity{
@@ -35,4 +31,12 @@ type Allocation @entity{
   token: Bytes!
   amount:[BigInt!]
   owner: User!
+}
+
+type Vault @entity{
+  id: ID!
+  owner: User!
+  backup: Bytes!
+  StartingAmount: BigInt!
+  inheritors: [Bytes!]
 }

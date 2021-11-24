@@ -11,56 +11,6 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class Token extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save Token entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save Token entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("Token", id.toString(), this);
-    }
-  }
-
-  static load(id: string): Token | null {
-    return changetype<Token | null>(store.get("Token", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get balance(): Array<string> | null {
-    let value = this.get("balance");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
-  }
-
-  set balance(value: Array<string> | null) {
-    if (!value) {
-      this.unset("balance");
-    } else {
-      this.set("balance", Value.fromStringArray(<Array<string>>value));
-    }
-  }
-}
-
 export class User extends Entity {
   constructor(id: string) {
     super();
@@ -143,32 +93,48 @@ export class User extends Entity {
       this.set("Allocations", Value.fromString(<string>value));
     }
   }
+
+  get StartingBalance(): BigInt | null {
+    let value = this.get("StartingBalance");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set StartingBalance(value: BigInt | null) {
+    if (!value) {
+      this.unset("StartingBalance");
+    } else {
+      this.set("StartingBalance", Value.fromBigInt(<BigInt>value));
+    }
+  }
 }
 
-export class TokenBalance extends Entity {
+export class Token extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("token", Value.fromString(""));
-    this.set("amount", Value.fromBigInt(BigInt.zero()));
+    this.set("token", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save TokenBalance entity without an ID");
+    assert(id != null, "Cannot save Token entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save TokenBalance entity with non-string ID. " +
+        "Cannot save Token entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("TokenBalance", id.toString(), this);
+      store.set("Token", id.toString(), this);
     }
   }
 
-  static load(id: string): TokenBalance | null {
-    return changetype<TokenBalance | null>(store.get("TokenBalance", id));
+  static load(id: string): Token | null {
+    return changetype<Token | null>(store.get("Token", id));
   }
 
   get id(): string {
@@ -180,22 +146,30 @@ export class TokenBalance extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get token(): string {
+  get token(): Bytes {
     let value = this.get("token");
-    return value!.toString();
+    return value!.toBytes();
   }
 
-  set token(value: string) {
-    this.set("token", Value.fromString(value));
+  set token(value: Bytes) {
+    this.set("token", Value.fromBytes(value));
   }
 
-  get amount(): BigInt {
+  get amount(): Array<BigInt> | null {
     let value = this.get("amount");
-    return value!.toBigInt();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigIntArray();
+    }
   }
 
-  set amount(value: BigInt) {
-    this.set("amount", Value.fromBigInt(value));
+  set amount(value: Array<BigInt> | null) {
+    if (!value) {
+      this.unset("amount");
+    } else {
+      this.set("amount", Value.fromBigIntArray(<Array<BigInt>>value));
+    }
   }
 }
 
@@ -331,5 +305,86 @@ export class Allocation extends Entity {
 
   set owner(value: string) {
     this.set("owner", Value.fromString(value));
+  }
+}
+
+export class Vault extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("owner", Value.fromString(""));
+    this.set("backup", Value.fromBytes(Bytes.empty()));
+    this.set("StartingAmount", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Vault entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Vault entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Vault", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Vault | null {
+    return changetype<Vault | null>(store.get("Vault", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get owner(): string {
+    let value = this.get("owner");
+    return value!.toString();
+  }
+
+  set owner(value: string) {
+    this.set("owner", Value.fromString(value));
+  }
+
+  get backup(): Bytes {
+    let value = this.get("backup");
+    return value!.toBytes();
+  }
+
+  set backup(value: Bytes) {
+    this.set("backup", Value.fromBytes(value));
+  }
+
+  get StartingAmount(): BigInt {
+    let value = this.get("StartingAmount");
+    return value!.toBigInt();
+  }
+
+  set StartingAmount(value: BigInt) {
+    this.set("StartingAmount", Value.fromBigInt(value));
+  }
+
+  get inheritors(): Array<Bytes> | null {
+    let value = this.get("inheritors");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set inheritors(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("inheritors");
+    } else {
+      this.set("inheritors", Value.fromBytesArray(<Array<Bytes>>value));
+    }
   }
 }

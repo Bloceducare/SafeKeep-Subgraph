@@ -12,7 +12,7 @@ import {
   tokensDeposited,
   vaultCreated
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, User, Inheritor, Allocation } from "../generated/schema"
+import { Token, User, Inheritor, Allocation, Vault } from "../generated/schema"
 
 export function handleEthAllocated(event: EthAllocated): void {}
 
@@ -53,6 +53,25 @@ export function handletokenAllocated(event: tokenAllocated): void {
   allocation.save()
 }
 
-export function handletokensDeposited(event: tokensDeposited): void {}
+export function handletokensDeposited(event: tokensDeposited): void {
+  let id = event.params.tokens.toHex()
+  let deposit = Token.load(id)
+  if(deposit){
+    deposit.token = event.params.tokens
+    deposit.amount = event.params.amounts
+    deposit.save()
+  }
+}
 
-export function handlevaultCreated(event: vaultCreated): void {}
+export function handlevaultCreated(event: vaultCreated): void {
+  let id = event.params.owner.toHex()
+  let vaultcreated = Vault.load(id)
+  if(vaultcreated == null ){
+    vaultcreated = new Vault(id) 
+  }
+  vaultcreated.owner = event.params.owner.toHex()
+  vaultcreated.backup = event.params.backup
+  vaultcreated.StartingAmount = event.params.startingBalance
+  vaultcreated.inheritors = event.params.inheritors_
+  vaultcreated.save()
+}
