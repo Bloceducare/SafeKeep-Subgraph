@@ -94,20 +94,20 @@ export class User extends Entity {
     }
   }
 
-  get StartingBalance(): BigInt | null {
-    let value = this.get("StartingBalance");
+  get Clamied(): string | null {
+    let value = this.get("Clamied");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigInt();
+      return value.toString();
     }
   }
 
-  set StartingBalance(value: BigInt | null) {
+  set Clamied(value: string | null) {
     if (!value) {
-      this.unset("StartingBalance");
+      this.unset("Clamied");
     } else {
-      this.set("StartingBalance", Value.fromBigInt(<BigInt>value));
+      this.set("Clamied", Value.fromString(<string>value));
     }
   }
 }
@@ -316,6 +316,7 @@ export class Vault extends Entity {
     this.set("owner", Value.fromString(""));
     this.set("backup", Value.fromBytes(Bytes.empty()));
     this.set("StartingAmount", Value.fromBigInt(BigInt.zero()));
+    this.set("inheritors", Value.fromBytesArray(new Array(0)));
   }
 
   save(): void {
@@ -371,20 +372,76 @@ export class Vault extends Entity {
     this.set("StartingAmount", Value.fromBigInt(value));
   }
 
-  get inheritors(): Array<Bytes> | null {
+  get inheritors(): Array<Bytes> {
     let value = this.get("inheritors");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytesArray();
+    return value!.toBytesArray();
+  }
+
+  set inheritors(value: Array<Bytes>) {
+    this.set("inheritors", Value.fromBytesArray(value));
+  }
+}
+
+export class ClamiedToken extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("inheritor", Value.fromBytes(Bytes.empty()));
+    this.set("token", Value.fromBytes(Bytes.empty()));
+    this.set("amount", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save ClamiedToken entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save ClamiedToken entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("ClamiedToken", id.toString(), this);
     }
   }
 
-  set inheritors(value: Array<Bytes> | null) {
-    if (!value) {
-      this.unset("inheritors");
-    } else {
-      this.set("inheritors", Value.fromBytesArray(<Array<Bytes>>value));
-    }
+  static load(id: string): ClamiedToken | null {
+    return changetype<ClamiedToken | null>(store.get("ClamiedToken", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get inheritor(): Bytes {
+    let value = this.get("inheritor");
+    return value!.toBytes();
+  }
+
+  set inheritor(value: Bytes) {
+    this.set("inheritor", Value.fromBytes(value));
+  }
+
+  get token(): Bytes {
+    let value = this.get("token");
+    return value!.toBytes();
+  }
+
+  set token(value: Bytes) {
+    this.set("token", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 }

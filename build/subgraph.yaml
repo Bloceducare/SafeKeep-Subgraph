@@ -1,0 +1,44 @@
+specVersion: 0.0.2
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: SafeKeep
+    network: rinkeby
+    source:
+      address: "0x3b16c4985dFC8451c0337e68C0ddA52b0FB6b843"
+      abi: SafeKeep
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - User
+        - Inheritor
+        - Token
+        - Allocation
+      abis:
+        - name: SafeKeep
+          file: SafeKeep\abis\SafeKeep.json
+      eventHandlers:
+        - event: ClaimedEth(indexed address,uint256)
+          handler: handleClaimedEth
+        - event: EthAllocated(indexed address[],uint256[])
+          handler: handleEthAllocated
+        - event: EthDeposited(uint256)
+          handler: handleEthDeposited
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: claimedTokens(indexed address,indexed address,uint256)
+          handler: handleclaimedTokens
+        - event: inheritorsAdded(indexed address[])
+          handler: handleinheritorsAdded
+        - event: inheritorsRemoved(indexed address[])
+          handler: handleinheritorsRemoved
+        - event: tokenAllocated(indexed address,indexed address[],uint256[])
+          handler: handletokenAllocated
+        - event: tokensDeposited(indexed address[],uint256[])
+          handler: handletokensDeposited
+        - event: vaultCreated(indexed address,indexed address,indexed uint256,address[])
+          handler: handlevaultCreated
+      file: SafeKeep\SafeKeep.wasm
