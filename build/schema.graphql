@@ -1,53 +1,35 @@
-# type ExampleEntity @entity {
-#   id: ID!
-#   count: BigInt!
-#   inheritor: Bytes! # address
-#   _amount: BigInt! # uint256
-# }
-
-type User @entity{
+type Vault @entity {
   id: ID!
-  UserToken: [Token!]
-  UserInheritor: [Inheritor!] @derivedFrom(field:"owner")
-  Allocations: Allocation @derivedFrom(field:"owner")
-  Clamied: ClamiedToken
-}
-
-type Token @entity{
-  id: ID!
-  token: Bytes!
-  amount: [BigInt!]
-}
-
-  # symbol: String!
-  # name: String!
-  # decimals: BigInt!
-
-type Inheritor @entity{
-  id: ID!
-  inheritor: Bytes!
-  owner: User!
-}
-
-type Allocation @entity{
-  id: ID!
-  inheritor: Bytes!
-  token: Bytes!
-  amount:[BigInt!]
-  owner: User!
-}
-
-type Vault @entity{
-  id: ID!
-  owner: User!
+  vaultId: BigInt!
   backup: Bytes!
   StartingAmount: BigInt!
-  inheritors: [Bytes!]!
+  inherit: [String!]!
+  ethShares:[BigInt!]!
+  inheritors: [Inheritor!]!
+  tokenAllocated: [Token!]!
+  tokenOwned: [Token!]!
+  
 }
 
-type ClamiedToken @entity{
+type Inheritor @entity {
   id: ID!
-  inheritor: Bytes!
-  token: Bytes!
-  amount: BigInt!
+  vaultId: [String!]!
+  vaults: [Vault!]! @derivedFrom(field: "inheritors")
+}
+
+
+type EthAllocated @entity {
+  id: ID!
+  ethShares: BigInt!
+}
+
+type Token @entity {
+  id: ID!
+  tokenAddress: Bytes!
+  amount: BigInt
+  tokenName: String
+  tokenDecimals: BigInt
+  tokenSymbol: String
+  vaults: [Vault!]! @derivedFrom(field: "tokenAllocated")
+  vaultAss: [Vault!]! @derivedFrom(field: "tokenOwned")
 }

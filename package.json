@@ -1,13 +1,15 @@
 {
-  "name": "SafeKeep-subgraph",
-  "license": "UNLICENSED",
+  "name": "safekeep-subgraph-1",
+  "license": "MIT",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ Pelumi527/SafeKeep-subgraph",
-    "create-local": "graph create --node http://localhost:8020/ Pelumi527/SafeKeep-subgraph",
-    "remove-local": "graph remove --node http://localhost:8020/ Pelumi527/SafeKeep-subgraph",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 Pelumi527/SafeKeep-subgraph"
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ okeken/sfk6",
+    "create-local": "graph create --node http://localhost:8020/ okeken/sfk6",
+    "remove-local": "graph remove --node http://localhost:8020/ okeken/sfk6",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 okeken/sfk6",
+    "serve": "graph build && graph codegen && graph deploy --node https://api.thegraph.com/deploy/ okeken/sfk6",
+    "pre-serve": "graph build && graph codegen"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.23.2",

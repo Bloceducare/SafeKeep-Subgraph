@@ -1,0 +1,59 @@
+
+# type ExampleEntity @entity {
+#   id: ID!
+#   count: BigInt!
+#   inheritor: Bytes! # address
+#   _amount: BigInt! # uint256
+# }
+
+type User @entity {
+  id: ID!
+  UserToken: [Token!]
+  UserInheritor: [Inheritor!] @derivedFrom(field: "owner")
+  Allocations: Allocation @derivedFrom(field: "owner")
+  Clamied: ClamiedToken
+}
+
+type Token @entity {
+  id: ID!
+  token: Bytes!
+  amount: [BigInt!]
+}
+
+# symbol: String!
+# name: String!
+# decimals: BigInt!
+
+type Inheritor @entity {
+  id: ID!
+  inheritor: Bytes!
+  owner: User!
+}
+
+type Allocation @entity {
+  id: ID!
+  inheritor: Bytes!
+  token: Bytes!
+  amount: [BigInt!]
+  owner: User!
+}
+
+
+
+
+type Vault @entity {
+  id: ID!
+  vaultId: BigInt!
+  owner: User!
+  backup: Bytes!
+  StartingAmount: BigInt!
+  inheritors: [String!]!
+  checkAllEtherAllocated:String!
+}
+
+type ClamiedToken @entity {
+  id: ID!
+  inheritor: Bytes!
+  token: Bytes!
+  amount: BigInt!
+}
