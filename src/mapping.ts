@@ -89,7 +89,7 @@ export function handleclaimedTokens(event: ClaimedTokensEvent): void {
 
 
 export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
-  let id = event.params.vaultId.plus(BigInt.fromU32(1)).toString()
+  let id = event.params.vaultId.toString()
   let vault = Vault.load(id)
   let inAddress = event.params.newInheritors
   let amt = event.params.newWeiShares
@@ -117,7 +117,7 @@ export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
 
 
 export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
-  let id = event.params.vaultId.plus(BigInt.fromU32(1)).toString()
+  let id = event.params.vaultId.toString()
   let vault = Vault.load(id)
   let inAddress = event.params.inheritors
   let empty = ['']
@@ -136,8 +136,8 @@ export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
 
     for (let i = 0; i < inAddress.length; i++) {
       const inh = inAddress[i].toHexString()
-      const idx =  findItemIndex(vault.inherit, inh)
-      const sh = share.splice(i32(idx), 1);
+      const idx =  findItemIndex(vault.inherit, inh)    
+      const sh = share.splice(i32(idx + 1), 1);
       vault.ethShares = sh
       vault.save()
     }
