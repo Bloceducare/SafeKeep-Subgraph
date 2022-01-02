@@ -27,5 +27,3 @@ export function removeItems(array:string[], items:string[]):string[]{
     }
     return array;
   }
-  
-

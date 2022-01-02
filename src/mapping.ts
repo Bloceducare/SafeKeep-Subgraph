@@ -160,13 +160,20 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
   let tokenAddress = event.params.tokens
   let amt = event.params.amounts
 
+
   if(vault){
     for (let i = 0; i < tokenAddress.length; i++) {
+      let tokenList =  vault.tokens
       const element = tokenAddress[i];
+      let newToken = new Token(element.toHexString())
       let token  = Token.load(element.toHexString())
       if(!token) {
-        let newToken = new Token(element.toHexString())
-        newToken.id = element.toHexString()
+        tokenList.push(element.toHexString())
+        tokenList.push(amt[i].toString())
+        vault.tokens = tokenList
+        vault.save()
+
+       
         newToken.amount = amt[i]
         newToken.tokenAddress = element
         newToken.save()
@@ -175,6 +182,13 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
       if(token){
         let currentTokenAmt = token.amount
         if(currentTokenAmt){
+          let idx = findItemIndex(tokenList, element.toHexString())
+          let currentTokenAm = tokenList[i32(idx + 2)]
+          let newTokenAm = bigInt.fromString(currentTokenAm).plus(amt[i]).toString()
+          tokenList[i32(idx + 2)] = newTokenAm
+          vault.tokens = tokenList
+          vault.save()
+          
           token.tokenAddress = element
           token.amount = currentTokenAmt.plus(amt[i])
           token.save()
@@ -183,6 +197,33 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
     }
   }
 }
+
+// export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
+//   let vault = Vault.load(event.params.vaultId.toString())
+//   let tokenAddress = event.params.tokens
+//   let amt = event.params.amounts
+
+
+//   if(vault){
+//     let tokenList =  vault.tokens
+//     for (let i = 0; i < tokenAddress.length; i++) {
+//       const element = tokenAddress[i];
+//       let token  = Token.load(element.toHexString())
+//       if(token){
+        
+//         let tokenIdx = findItemIndex(tokenList, element.toHexString())
+//         let currentTokenAm = tokenList[i32(tokenIdx + 2)]
+//         let newTokenAm = bigInt.fromString(currentTokenAm).minus(amt[i]).toString()
+//         tokenList[i32(tokenIdx + 2)] = newTokenAm
+//         vault.tokens = tokenList
+//         vault.save()
+
+//       }
+
+      
+//     }
+//   }
+// }
 
 
 export function handlevaultCreated(event: VaultCreatedEvent): void { 

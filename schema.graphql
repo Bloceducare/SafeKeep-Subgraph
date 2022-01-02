@@ -1,14 +1,25 @@
+type Token @entity {
+  id: ID!
+  tokenAddress: Bytes!
+  amount: BigInt
+  amountAllocated: BigInt
+  name: String!
+  symbol: String!
+  decimals: Int!
+  tokenOwn: Vault!
+}
+
 type Vault @entity {
   id: ID!
   vaultId: BigInt!
   backup: Bytes!
   StartingAmount: BigInt!
   inherit: [String!]!
-  ethShares:[BigInt!]!
+  ethShares: [BigInt!]!
   inheritors: [Inheritor!]!
-  tokenAllocated: [Token!]!
-  tokenOwned: [Token!]!
-  
+  tokenAllocated: Token
+  toks: [Token!]! @derivedFrom(field: "tokenOwn")
+  tokens: [String!]!
 }
 
 type Inheritor @entity {
@@ -17,19 +28,7 @@ type Inheritor @entity {
   vaults: [Vault!]! @derivedFrom(field: "inheritors")
 }
 
-
 type EthAllocated @entity {
   id: ID!
   ethShares: BigInt!
-}
-
-type Token @entity {
-  id: ID!
-  tokenAddress: Bytes!
-  amount: BigInt
-  tokenName: String
-  tokenDecimals: BigInt
-  tokenSymbol: String
-  vaults: [Vault!]! @derivedFrom(field: "tokenAllocated")
-  vaultAss: [Vault!]! @derivedFrom(field: "tokenOwned")
 }

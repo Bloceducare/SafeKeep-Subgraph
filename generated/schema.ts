@@ -11,6 +11,124 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
+export class Token extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("tokenAddress", Value.fromBytes(Bytes.empty()));
+    this.set("name", Value.fromString(""));
+    this.set("symbol", Value.fromString(""));
+    this.set("decimals", Value.fromI32(0));
+    this.set("tokenOwn", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Token entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Token entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Token", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Token | null {
+    return changetype<Token | null>(store.get("Token", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get tokenAddress(): Bytes {
+    let value = this.get("tokenAddress");
+    return value!.toBytes();
+  }
+
+  set tokenAddress(value: Bytes) {
+    this.set("tokenAddress", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt | null {
+    let value = this.get("amount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set amount(value: BigInt | null) {
+    if (!value) {
+      this.unset("amount");
+    } else {
+      this.set("amount", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get amountAllocated(): BigInt | null {
+    let value = this.get("amountAllocated");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set amountAllocated(value: BigInt | null) {
+    if (!value) {
+      this.unset("amountAllocated");
+    } else {
+      this.set("amountAllocated", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get name(): string {
+    let value = this.get("name");
+    return value!.toString();
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get symbol(): string {
+    let value = this.get("symbol");
+    return value!.toString();
+  }
+
+  set symbol(value: string) {
+    this.set("symbol", Value.fromString(value));
+  }
+
+  get decimals(): i32 {
+    let value = this.get("decimals");
+    return value!.toI32();
+  }
+
+  set decimals(value: i32) {
+    this.set("decimals", Value.fromI32(value));
+  }
+
+  get tokenOwn(): string {
+    let value = this.get("tokenOwn");
+    return value!.toString();
+  }
+
+  set tokenOwn(value: string) {
+    this.set("tokenOwn", Value.fromString(value));
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
@@ -22,8 +140,7 @@ export class Vault extends Entity {
     this.set("inherit", Value.fromStringArray(new Array(0)));
     this.set("ethShares", Value.fromBigIntArray(new Array(0)));
     this.set("inheritors", Value.fromStringArray(new Array(0)));
-    this.set("tokenAllocated", Value.fromStringArray(new Array(0)));
-    this.set("tokenOwned", Value.fromStringArray(new Array(0)));
+    this.set("tokens", Value.fromStringArray(new Array(0)));
   }
 
   save(): void {
@@ -106,22 +223,39 @@ export class Vault extends Entity {
     this.set("inheritors", Value.fromStringArray(value));
   }
 
-  get tokenAllocated(): Array<string> {
+  get tokenAllocated(): string | null {
     let value = this.get("tokenAllocated");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set tokenAllocated(value: string | null) {
+    if (!value) {
+      this.unset("tokenAllocated");
+    } else {
+      this.set("tokenAllocated", Value.fromString(<string>value));
+    }
+  }
+
+  get toks(): Array<string> {
+    let value = this.get("toks");
     return value!.toStringArray();
   }
 
-  set tokenAllocated(value: Array<string>) {
-    this.set("tokenAllocated", Value.fromStringArray(value));
+  set toks(value: Array<string>) {
+    this.set("toks", Value.fromStringArray(value));
   }
 
-  get tokenOwned(): Array<string> {
-    let value = this.get("tokenOwned");
+  get tokens(): Array<string> {
+    let value = this.get("tokens");
     return value!.toStringArray();
   }
 
-  set tokenOwned(value: Array<string>) {
-    this.set("tokenOwned", Value.fromStringArray(value));
+  set tokens(value: Array<string>) {
+    this.set("tokens", Value.fromStringArray(value));
   }
 }
 
@@ -219,135 +353,5 @@ export class EthAllocated extends Entity {
 
   set ethShares(value: BigInt) {
     this.set("ethShares", Value.fromBigInt(value));
-  }
-}
-
-export class Token extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("tokenAddress", Value.fromBytes(Bytes.empty()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save Token entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save Token entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("Token", id.toString(), this);
-    }
-  }
-
-  static load(id: string): Token | null {
-    return changetype<Token | null>(store.get("Token", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get tokenAddress(): Bytes {
-    let value = this.get("tokenAddress");
-    return value!.toBytes();
-  }
-
-  set tokenAddress(value: Bytes) {
-    this.set("tokenAddress", Value.fromBytes(value));
-  }
-
-  get amount(): BigInt | null {
-    let value = this.get("amount");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set amount(value: BigInt | null) {
-    if (!value) {
-      this.unset("amount");
-    } else {
-      this.set("amount", Value.fromBigInt(<BigInt>value));
-    }
-  }
-
-  get tokenName(): string | null {
-    let value = this.get("tokenName");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
-  }
-
-  set tokenName(value: string | null) {
-    if (!value) {
-      this.unset("tokenName");
-    } else {
-      this.set("tokenName", Value.fromString(<string>value));
-    }
-  }
-
-  get tokenDecimals(): BigInt | null {
-    let value = this.get("tokenDecimals");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set tokenDecimals(value: BigInt | null) {
-    if (!value) {
-      this.unset("tokenDecimals");
-    } else {
-      this.set("tokenDecimals", Value.fromBigInt(<BigInt>value));
-    }
-  }
-
-  get tokenSymbol(): string | null {
-    let value = this.get("tokenSymbol");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
-  }
-
-  set tokenSymbol(value: string | null) {
-    if (!value) {
-      this.unset("tokenSymbol");
-    } else {
-      this.set("tokenSymbol", Value.fromString(<string>value));
-    }
-  }
-
-  get vaults(): Array<string> {
-    let value = this.get("vaults");
-    return value!.toStringArray();
-  }
-
-  set vaults(value: Array<string>) {
-    this.set("vaults", Value.fromStringArray(value));
-  }
-
-  get vaultAss(): Array<string> {
-    let value = this.get("vaultAss");
-    return value!.toStringArray();
-  }
-
-  set vaultAss(value: Array<string>) {
-    this.set("vaultAss", Value.fromStringArray(value));
   }
 }
