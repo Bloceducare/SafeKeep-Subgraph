@@ -284,6 +284,32 @@ export class tokensDeposited__Params {
   }
 }
 
+export class tokensWithdrawn extends ethereum.Event {
+  get params(): tokensWithdrawn__Params {
+    return new tokensWithdrawn__Params(this);
+  }
+}
+
+export class tokensWithdrawn__Params {
+  _event: tokensWithdrawn;
+
+  constructor(event: tokensWithdrawn) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get tokens(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+
+  get amounts(): Array<BigInt> {
+    return this._event.parameters[2].value.toBigIntArray();
+  }
+}
+
 export class vaultCreated extends ethereum.Event {
   get params(): vaultCreated__Params {
     return new vaultCreated__Params(this);

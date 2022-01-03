@@ -13,6 +13,7 @@ import {
   tokenAllocated as TokenAllocatedEvent,
   tokensDeposited as TokensDepositedEvent,
   vaultCreated as VaultCreatedEvent,
+  tokensWithdrawn as TokensWithdrawnEvent,
   inheritorsAddedVaultCreated as InheritorsAddedVaultCreatedEvent,
   
   
@@ -38,21 +39,31 @@ export function handleClaimedEth(event: ClaimedEthEvent): void {
 
 
 export function handleEthAllocated(event: EthAllocatedEvent):void{
-//    let vault = Vault.load(event.params.vaultId.toString())
-//    let inAddress = event.params.inheritors
-//    let amt = event.params.amounts
+  let id = event.params.vaultId.toString()
+  let inheritors =event.params.inheritors
+  let ethAllocations = event.params.amounts
+  let vault = Vault.load(id)
   
-//   if(vault) {
-//     let Inheritors = vault.inherit
-//     for (let i = 0; i < inAddress.length; i++) {
-//       let inh = inAddress[i].toString()
-//       let idx = findItemIndex(Inheritors, inh)   
-         
-//       let currentInheritor = vault.ethShares[i32(idx)].plus(amt[i])
-//       vault.ethShares[i32(idx)] = currentInheritor
-//       vault.save()      
-//     }
-//  }
+
+  if(!vault) return;
+  let share = vault.ethShares
+  let inheritorsList= vault.inherit
+
+  for (let i = 0; i < inheritors.length; i++) {
+    const inheritor = inheritors[i].toHexString();
+    const ethAllocated = ethAllocations[i];
+    let inheritorsEntity = Inheritor.load(inheritor.toString())
+    if(!inheritorsEntity)return;
+    inheritorsEntity.ethAllocated = ethAllocated
+    inheritorsEntity.save()
+  
+    let idx = findItemIndex(inheritorsList, inheritor)
+    const sh = share.splice(i32(idx + 1), 1);
+    vault.ethShares = sh
+    vault.save()
+    
+  }
+
 }
 
 export function handleEthDeposited(event: EthDepositedEvent): void {
@@ -151,6 +162,22 @@ export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
 
 
 export function handletokenAllocated(event: TokenAllocatedEvent): void {
+  let inheritors = event.params.inheritors
+  let tokenAllocations = event.params.amounts
+  let tokenAddress = event.params.token
+  let token = Token.load(tokenAddress.toHexString())
+  if(!token) return;
+
+  for (let i = 0; i < inheritors.length; i++) {
+    const inheritor = inheritors[i].toHexString();
+    if(inheritor) return;
+    token.amountAllocated = tokenAllocations[i]
+    token.ownerinheritor = inheritor
+    token.save()
+    
+  }
+
+
 
 }
 
@@ -160,23 +187,25 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
   let tokenAddress = event.params.tokens
   let amt = event.params.amounts
 
-
-  if(vault){
-    for (let i = 0; i < tokenAddress.length; i++) {
-      let tokenList =  vault.tokens
+  if(!vault) return
+    for (let i = 0; i < tokenAddress.length; i++) {  
+      let tokenList =  vault.tokensArray
       const element = tokenAddress[i];
       let newToken = new Token(element.toHexString())
       let token  = Token.load(element.toHexString())
       if(!token) {
-        tokenList.push(element.toHexString())
-        tokenList.push(amt[i].toString())
-        vault.tokens = tokenList
-        vault.save()
-
-       
+      
+     
         newToken.amount = amt[i]
         newToken.tokenAddress = element
+        newToken.owner = event.params.vaultId.toString()
+        
         newToken.save()
+
+        tokenList.push(element.toHexString())
+        tokenList.push(amt[i].toString())
+        vault.tokensArray = tokenList
+        vault.save()
       }
 
       if(token){
@@ -186,49 +215,41 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
           let currentTokenAm = tokenList[i32(idx + 2)]
           let newTokenAm = bigInt.fromString(currentTokenAm).plus(amt[i]).toString()
           tokenList[i32(idx + 2)] = newTokenAm
-          vault.tokens = tokenList
+          vault.tokensArray = tokenList
           vault.save()
-          
+
           token.tokenAddress = element
           token.amount = currentTokenAmt.plus(amt[i])
+          token.owner = event.params.vaultId.toString()
+         
           token.save()
         }
       }      
     }
-  }
 }
 
-// export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
-//   let vault = Vault.load(event.params.vaultId.toString())
-//   let tokenAddress = event.params.tokens
-//   let amt = event.params.amounts
+export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
+  let tokenAddress = event.params.tokens
+  let amt = event.params.amounts
+    for (let i = 0; i < tokenAddress.length; i++) {
+      const element = tokenAddress[i];
+      let token  = Token.load(element.toHexString())
+      if(!token) return
 
-
-//   if(vault){
-//     let tokenList =  vault.tokens
-//     for (let i = 0; i < tokenAddress.length; i++) {
-//       const element = tokenAddress[i];
-//       let token  = Token.load(element.toHexString())
-//       if(token){
-        
-//         let tokenIdx = findItemIndex(tokenList, element.toHexString())
-//         let currentTokenAm = tokenList[i32(tokenIdx + 2)]
-//         let newTokenAm = bigInt.fromString(currentTokenAm).minus(amt[i]).toString()
-//         tokenList[i32(tokenIdx + 2)] = newTokenAm
-//         vault.tokens = tokenList
-//         vault.save()
-
-//       }
-
-      
-//     }
-//   }
-// }
+      let prevAmt = token.amount
+      let currentAmt = amt[i]
+      if(!prevAmt) return;
+      token.amount = prevAmt.minus(currentAmt)
+       token.save()
+    }
+  
+}
 
 
 export function handlevaultCreated(event: VaultCreatedEvent): void { 
   let id = event.params.vaultId.toString()
   let inher = event.params.inheritors_
+
   let vaultcreated = new Vault(id)  
   let em = [""]
 
@@ -241,8 +262,10 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
       let arr = inh.vaultId
       arr.push(id)
       inh.vaultId = arr
+      inh.vaults = id
       inh.save()
   }
+  
 
   let shares = [bigInt.fromString("0")]
   for (let i = 0; i < inher.length; i++) {
@@ -255,5 +278,6 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
   vaultcreated.backup = event.params.backup
   vaultcreated.StartingAmount = event.params.startingBalance
   vaultcreated.vaultId = event.params.vaultId
+ vaultcreated.owner =  event.params.owner
   vaultcreated.save()  
 }

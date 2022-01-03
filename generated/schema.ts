@@ -17,10 +17,9 @@ export class Token extends Entity {
     this.set("id", Value.fromString(id));
 
     this.set("tokenAddress", Value.fromBytes(Bytes.empty()));
-    this.set("name", Value.fromString(""));
-    this.set("symbol", Value.fromString(""));
-    this.set("decimals", Value.fromI32(0));
-    this.set("tokenOwn", Value.fromString(""));
+    this.set("amountAllocated", Value.fromBigInt(BigInt.zero()));
+    this.set("owner", Value.fromString(""));
+    this.set("ownerinheritor", Value.fromString(""));
   }
 
   save(): void {
@@ -75,57 +74,104 @@ export class Token extends Entity {
     }
   }
 
-  get amountAllocated(): BigInt | null {
+  get amountAllocated(): BigInt {
     let value = this.get("amountAllocated");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
+    return value!.toBigInt();
+  }
+
+  set amountAllocated(value: BigInt) {
+    this.set("amountAllocated", Value.fromBigInt(value));
+  }
+
+  get owner(): string {
+    let value = this.get("owner");
+    return value!.toString();
+  }
+
+  set owner(value: string) {
+    this.set("owner", Value.fromString(value));
+  }
+
+  get ownerinheritor(): string {
+    let value = this.get("ownerinheritor");
+    return value!.toString();
+  }
+
+  set ownerinheritor(value: string) {
+    this.set("ownerinheritor", Value.fromString(value));
+  }
+}
+
+export class Inheritor extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("vaultId", Value.fromStringArray(new Array(0)));
+    this.set("ethAllocated", Value.fromBigInt(BigInt.zero()));
+    this.set("vaults", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Inheritor entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Inheritor entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Inheritor", id.toString(), this);
     }
   }
 
-  set amountAllocated(value: BigInt | null) {
-    if (!value) {
-      this.unset("amountAllocated");
-    } else {
-      this.set("amountAllocated", Value.fromBigInt(<BigInt>value));
-    }
+  static load(id: string): Inheritor | null {
+    return changetype<Inheritor | null>(store.get("Inheritor", id));
   }
 
-  get name(): string {
-    let value = this.get("name");
+  get id(): string {
+    let value = this.get("id");
     return value!.toString();
   }
 
-  set name(value: string) {
-    this.set("name", Value.fromString(value));
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
   }
 
-  get symbol(): string {
-    let value = this.get("symbol");
+  get vaultId(): Array<string> {
+    let value = this.get("vaultId");
+    return value!.toStringArray();
+  }
+
+  set vaultId(value: Array<string>) {
+    this.set("vaultId", Value.fromStringArray(value));
+  }
+
+  get ethAllocated(): BigInt {
+    let value = this.get("ethAllocated");
+    return value!.toBigInt();
+  }
+
+  set ethAllocated(value: BigInt) {
+    this.set("ethAllocated", Value.fromBigInt(value));
+  }
+
+  get vaults(): string {
+    let value = this.get("vaults");
     return value!.toString();
   }
 
-  set symbol(value: string) {
-    this.set("symbol", Value.fromString(value));
+  set vaults(value: string) {
+    this.set("vaults", Value.fromString(value));
   }
 
-  get decimals(): i32 {
-    let value = this.get("decimals");
-    return value!.toI32();
+  get tokens(): Array<string> {
+    let value = this.get("tokens");
+    return value!.toStringArray();
   }
 
-  set decimals(value: i32) {
-    this.set("decimals", Value.fromI32(value));
-  }
-
-  get tokenOwn(): string {
-    let value = this.get("tokenOwn");
-    return value!.toString();
-  }
-
-  set tokenOwn(value: string) {
-    this.set("tokenOwn", Value.fromString(value));
+  set tokens(value: Array<string>) {
+    this.set("tokens", Value.fromStringArray(value));
   }
 }
 
@@ -139,8 +185,9 @@ export class Vault extends Entity {
     this.set("StartingAmount", Value.fromBigInt(BigInt.zero()));
     this.set("inherit", Value.fromStringArray(new Array(0)));
     this.set("ethShares", Value.fromBigIntArray(new Array(0)));
-    this.set("inheritors", Value.fromStringArray(new Array(0)));
-    this.set("tokens", Value.fromStringArray(new Array(0)));
+    this.set("totalEthAllocated", Value.fromBigInt(BigInt.zero()));
+    this.set("tokensArray", Value.fromStringArray(new Array(0)));
+    this.set("owner", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -214,39 +261,22 @@ export class Vault extends Entity {
     this.set("ethShares", Value.fromBigIntArray(value));
   }
 
-  get inheritors(): Array<string> {
-    let value = this.get("inheritors");
+  get totalEthAllocated(): BigInt {
+    let value = this.get("totalEthAllocated");
+    return value!.toBigInt();
+  }
+
+  set totalEthAllocated(value: BigInt) {
+    this.set("totalEthAllocated", Value.fromBigInt(value));
+  }
+
+  get tokensArray(): Array<string> {
+    let value = this.get("tokensArray");
     return value!.toStringArray();
   }
 
-  set inheritors(value: Array<string>) {
-    this.set("inheritors", Value.fromStringArray(value));
-  }
-
-  get tokenAllocated(): string | null {
-    let value = this.get("tokenAllocated");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
-  }
-
-  set tokenAllocated(value: string | null) {
-    if (!value) {
-      this.unset("tokenAllocated");
-    } else {
-      this.set("tokenAllocated", Value.fromString(<string>value));
-    }
-  }
-
-  get toks(): Array<string> {
-    let value = this.get("toks");
-    return value!.toStringArray();
-  }
-
-  set toks(value: Array<string>) {
-    this.set("toks", Value.fromStringArray(value));
+  set tokensArray(value: Array<string>) {
+    this.set("tokensArray", Value.fromStringArray(value));
   }
 
   get tokens(): Array<string> {
@@ -257,101 +287,22 @@ export class Vault extends Entity {
   set tokens(value: Array<string>) {
     this.set("tokens", Value.fromStringArray(value));
   }
-}
 
-export class Inheritor extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("vaultId", Value.fromStringArray(new Array(0)));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save Inheritor entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save Inheritor entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("Inheritor", id.toString(), this);
-    }
-  }
-
-  static load(id: string): Inheritor | null {
-    return changetype<Inheritor | null>(store.get("Inheritor", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get vaultId(): Array<string> {
-    let value = this.get("vaultId");
+  get inheritors(): Array<string> {
+    let value = this.get("inheritors");
     return value!.toStringArray();
   }
 
-  set vaultId(value: Array<string>) {
-    this.set("vaultId", Value.fromStringArray(value));
+  set inheritors(value: Array<string>) {
+    this.set("inheritors", Value.fromStringArray(value));
   }
 
-  get vaults(): Array<string> {
-    let value = this.get("vaults");
-    return value!.toStringArray();
+  get owner(): Bytes {
+    let value = this.get("owner");
+    return value!.toBytes();
   }
 
-  set vaults(value: Array<string>) {
-    this.set("vaults", Value.fromStringArray(value));
-  }
-}
-
-export class EthAllocated extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-
-    this.set("ethShares", Value.fromBigInt(BigInt.zero()));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save EthAllocated entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        "Cannot save EthAllocated entity with non-string ID. " +
-          'Considering using .toHex() to convert the "id" to a string.'
-      );
-      store.set("EthAllocated", id.toString(), this);
-    }
-  }
-
-  static load(id: string): EthAllocated | null {
-    return changetype<EthAllocated | null>(store.get("EthAllocated", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get ethShares(): BigInt {
-    let value = this.get("ethShares");
-    return value!.toBigInt();
-  }
-
-  set ethShares(value: BigInt) {
-    this.set("ethShares", Value.fromBigInt(value));
+  set owner(value: Bytes) {
+    this.set("owner", Value.fromBytes(value));
   }
 }

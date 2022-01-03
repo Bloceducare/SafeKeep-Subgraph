@@ -2,11 +2,17 @@ type Token @entity {
   id: ID!
   tokenAddress: Bytes!
   amount: BigInt
-  amountAllocated: BigInt
-  name: String!
-  symbol: String!
-  decimals: Int!
-  tokenOwn: Vault!
+  amountAllocated: BigInt!
+  owner: Vault!
+  ownerinheritor:Inheritor!
+}
+
+type Inheritor @entity {
+  id: ID!
+  vaultId: [String!]!
+  ethAllocated: BigInt!
+  vaults: Vault!
+  tokens: [Token!]! @derivedFrom(field: "ownerinheritor") 
 }
 
 type Vault @entity {
@@ -16,19 +22,12 @@ type Vault @entity {
   StartingAmount: BigInt!
   inherit: [String!]!
   ethShares: [BigInt!]!
-  inheritors: [Inheritor!]!
-  tokenAllocated: Token
-  toks: [Token!]! @derivedFrom(field: "tokenOwn")
-  tokens: [String!]!
+  totalEthAllocated: BigInt!
+  tokensArray: [String!]!
+  tokens: [Token!]! @derivedFrom(field: "owner")
+  inheritors:[Inheritor!]! @derivedFrom(field: "vaults") 
+  owner:Bytes!
+  
 }
 
-type Inheritor @entity {
-  id: ID!
-  vaultId: [String!]!
-  vaults: [Vault!]! @derivedFrom(field: "inheritors")
-}
 
-type EthAllocated @entity {
-  id: ID!
-  ethShares: BigInt!
-}
