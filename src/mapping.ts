@@ -19,9 +19,9 @@ import {
   
   
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, Inheritor,  Vault, Ping, Backup  } from "../generated/schema"
+import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory  } from "../generated/schema"
  
-import {findItemIndex, removeItems,} from './utils'
+import {findItemIndex,} from './utils'
 
 export function handlepingVault(event: PingVaultEvent): void {
   let vaultId = event.params.vaultId.toString()
@@ -66,6 +66,7 @@ export function handleClaimedEth(event: ClaimedEthEvent): void {
 export function handleEthAllocated(event: EthAllocatedEvent):void{
   let inheritors = event.params.inheritors
   let ethAllocations = event.params.amounts
+  let id = event.params.vaultId.toString()
 
   for (let i = 0; i < inheritors.length; i++) {
     const inheritor = inheritors[i].toHexString();
@@ -74,7 +75,19 @@ export function handleEthAllocated(event: EthAllocatedEvent):void{
     if(!inheritorsEntity)return;
     inheritorsEntity.ethAllocated = ethAllocated
     inheritorsEntity.save() 
+
+      //allocation
+    let allocation = new AllocationHistory(event.block.timestamp.toString())
+    allocation.vault = id
+     allocation.type= 'eth'
+     allocation.amount = ethAllocated
+     allocation.receipient = inheritors[i]
+    allocation.txHash = event.transaction.hash
+     allocation.save()
   }
+
+
+  
 
 }
 
@@ -153,6 +166,7 @@ export function handletokenAllocated(event: TokenAllocatedEvent): void {
   let tokenAllocations = event.params.amounts
   let tokenAddress = event.params.token
   let token = Token.load(tokenAddress.toHexString())
+  let id = event.params.vaultId.toString()
   if(!token) return;
 
   for (let i = 0; i < inheritors.length; i++) {
@@ -160,6 +174,16 @@ export function handletokenAllocated(event: TokenAllocatedEvent): void {
     token.amountAllocated = allocated
     token.ownerinheritor = inheritors[i].toHexString()
     token.save()
+
+     //allocation
+     let allocation = new AllocationHistory(event.block.timestamp.toString())
+     allocation.vault = id
+      allocation.type= 'tokens'
+      allocation.amount = allocated
+      allocation.assetAddress = tokenAddress
+      allocation.receipient = inheritors[i]
+      allocation.txHash = event.transaction.hash
+      allocation.save()
   }
 }
 
