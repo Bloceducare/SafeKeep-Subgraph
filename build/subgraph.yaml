@@ -6,8 +6,9 @@ dataSources:
     name: SafeKeep
     network: rinkeby
     source:
-      address: "0x3b16c4985dFC8451c0337e68C0ddA52b0FB6b843"
+      address: "0x1e63ba99ab74D0796dd897CBc58A0e741a8a1acc"
       abi: SafeKeep
+      startBlock: 9780138
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -17,28 +18,39 @@ dataSources:
         - Inheritor
         - Token
         - Allocation
+        - Vault
       abis:
         - name: SafeKeep
           file: SafeKeep\abis\SafeKeep.json
       eventHandlers:
-        - event: ClaimedEth(indexed address,uint256)
+        - event: ClaimedEth(indexed uint256,indexed address,uint256)
           handler: handleClaimedEth
-        - event: EthAllocated(indexed address[],uint256[])
+        - event: EthAllocated(indexed uint256,address[],uint256[])
           handler: handleEthAllocated
-        - event: EthDeposited(uint256)
+        - event: EthDeposited(indexed uint256,uint256)
           handler: handleEthDeposited
+        - event: EthWithdrawn(indexed uint256,uint256)
+          handler: handleEthWithdrawn
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: claimedTokens(indexed address,indexed address,uint256)
+        - event: claimedTokens(indexed uint256,address,indexed address,uint256)
           handler: handleclaimedTokens
-        - event: inheritorsAdded(indexed address[])
+        - event: inheritorsAdded(indexed uint256,address[],uint256[])
           handler: handleinheritorsAdded
-        - event: inheritorsRemoved(indexed address[])
+        - event: inheritorsAddedVaultCreated(indexed uint256,address[])
+          handler: handleinheritorsAddedVaultCreated
+        - event: inheritorsRemoved(indexed uint256,address[])
           handler: handleinheritorsRemoved
-        - event: tokenAllocated(indexed address,indexed address[],uint256[])
+        - event: tokenAllocated(indexed uint256,address,address[],uint256[])
           handler: handletokenAllocated
-        - event: tokensDeposited(indexed address[],uint256[])
+        - event: tokensDeposited(indexed uint256,address[],uint256[])
           handler: handletokensDeposited
-        - event: vaultCreated(indexed address,indexed address,indexed uint256,address[])
+        - event: tokensWithdrawn(indexed uint256,address[],uint256[])
+          handler: handletokensWithdrawn
+        - event: vaultCreated(indexed uint256,address,indexed address,indexed uint256,address[])
           handler: handlevaultCreated
+        - event: pingVault(uint256)
+          handler: handlepingVault
+        - event: backupAddress(uint256,address)
+          handler: handlebackupAddress
       file: SafeKeep\SafeKeep.wasm

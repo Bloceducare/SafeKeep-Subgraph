@@ -23,12 +23,16 @@ export class ClaimedEth__Params {
     this._event = event;
   }
 
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
   get inheritor(): Address {
-    return this._event.parameters[0].value.toAddress();
+    return this._event.parameters[1].value.toAddress();
   }
 
   get _amount(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -45,12 +49,16 @@ export class EthAllocated__Params {
     this._event = event;
   }
 
-  get inheritors(): Bytes {
-    return this._event.parameters[0].value.toBytes();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get inheritors(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
   }
 
   get amounts(): Array<BigInt> {
-    return this._event.parameters[1].value.toBigIntArray();
+    return this._event.parameters[2].value.toBigIntArray();
   }
 }
 
@@ -67,8 +75,34 @@ export class EthDeposited__Params {
     this._event = event;
   }
 
-  get _amount(): BigInt {
+  get vaultId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class EthWithdrawn extends ethereum.Event {
+  get params(): EthWithdrawn__Params {
+    return new EthWithdrawn__Params(this);
+  }
+}
+
+export class EthWithdrawn__Params {
+  _event: EthWithdrawn;
+
+  constructor(event: EthWithdrawn) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -94,6 +128,28 @@ export class OwnershipTransferred__Params {
   }
 }
 
+export class backupAddress extends ethereum.Event {
+  get params(): backupAddress__Params {
+    return new backupAddress__Params(this);
+  }
+}
+
+export class backupAddress__Params {
+  _event: backupAddress;
+
+  constructor(event: backupAddress) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get backup(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class claimedTokens extends ethereum.Event {
   get params(): claimedTokens__Params {
     return new claimedTokens__Params(this);
@@ -107,16 +163,20 @@ export class claimedTokens__Params {
     this._event = event;
   }
 
-  get inheritor(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
-  get token(): Address {
+  get inheritor(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
+  get token(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -133,8 +193,38 @@ export class inheritorsAdded__Params {
     this._event = event;
   }
 
-  get newInheritors(): Bytes {
-    return this._event.parameters[0].value.toBytes();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get newInheritors(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+
+  get newWeiShares(): Array<BigInt> {
+    return this._event.parameters[2].value.toBigIntArray();
+  }
+}
+
+export class inheritorsAddedVaultCreated extends ethereum.Event {
+  get params(): inheritorsAddedVaultCreated__Params {
+    return new inheritorsAddedVaultCreated__Params(this);
+  }
+}
+
+export class inheritorsAddedVaultCreated__Params {
+  _event: inheritorsAddedVaultCreated;
+
+  constructor(event: inheritorsAddedVaultCreated) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get newInheritors(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
   }
 }
 
@@ -151,8 +241,30 @@ export class inheritorsRemoved__Params {
     this._event = event;
   }
 
-  get inheritors(): Bytes {
-    return this._event.parameters[0].value.toBytes();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get inheritors(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+}
+
+export class pingVault extends ethereum.Event {
+  get params(): pingVault__Params {
+    return new pingVault__Params(this);
+  }
+}
+
+export class pingVault__Params {
+  _event: pingVault;
+
+  constructor(event: pingVault) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 }
 
@@ -169,16 +281,20 @@ export class tokenAllocated__Params {
     this._event = event;
   }
 
-  get token(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
-  get inheritors(): Bytes {
-    return this._event.parameters[1].value.toBytes();
+  get token(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get inheritors(): Array<Address> {
+    return this._event.parameters[2].value.toAddressArray();
   }
 
   get amounts(): Array<BigInt> {
-    return this._event.parameters[2].value.toBigIntArray();
+    return this._event.parameters[3].value.toBigIntArray();
   }
 }
 
@@ -195,12 +311,42 @@ export class tokensDeposited__Params {
     this._event = event;
   }
 
-  get tokens(): Bytes {
-    return this._event.parameters[0].value.toBytes();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get tokens(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
   }
 
   get amounts(): Array<BigInt> {
-    return this._event.parameters[1].value.toBigIntArray();
+    return this._event.parameters[2].value.toBigIntArray();
+  }
+}
+
+export class tokensWithdrawn extends ethereum.Event {
+  get params(): tokensWithdrawn__Params {
+    return new tokensWithdrawn__Params(this);
+  }
+}
+
+export class tokensWithdrawn__Params {
+  _event: tokensWithdrawn;
+
+  constructor(event: tokensWithdrawn) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get tokens(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+
+  get amounts(): Array<BigInt> {
+    return this._event.parameters[2].value.toBigIntArray();
   }
 }
 
@@ -217,20 +363,24 @@ export class vaultCreated__Params {
     this._event = event;
   }
 
-  get owner(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
-  get backup(): Address {
+  get owner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
+  get backup(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
   get startingBalance(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 
   get inheritors_(): Array<Address> {
-    return this._event.parameters[3].value.toAddressArray();
+    return this._event.parameters[4].value.toAddressArray();
   }
 }
 
