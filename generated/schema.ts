@@ -406,6 +406,82 @@ export class AllocationHistory extends Entity {
   }
 }
 
+export class InheritorHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("inheritor", Value.fromBytes(Bytes.empty()));
+    this.set("type", Value.fromString(""));
+    this.set("txHash", Value.fromBytes(Bytes.empty()));
+    this.set("vault", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save InheritorHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save InheritorHistory entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("InheritorHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): InheritorHistory | null {
+    return changetype<InheritorHistory | null>(
+      store.get("InheritorHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get inheritor(): Bytes {
+    let value = this.get("inheritor");
+    return value!.toBytes();
+  }
+
+  set inheritor(value: Bytes) {
+    this.set("inheritor", Value.fromBytes(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get txHash(): Bytes {
+    let value = this.get("txHash");
+    return value!.toBytes();
+  }
+
+  set txHash(value: Bytes) {
+    this.set("txHash", Value.fromBytes(value));
+  }
+
+  get vault(): string {
+    let value = this.get("vault");
+    return value!.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
@@ -572,5 +648,14 @@ export class Vault extends Entity {
 
   set allocationHistory(value: Array<string>) {
     this.set("allocationHistory", Value.fromStringArray(value));
+  }
+
+  get inheritorHistory(): Array<string> {
+    let value = this.get("inheritorHistory");
+    return value!.toStringArray();
+  }
+
+  set inheritorHistory(value: Array<string>) {
+    this.set("inheritorHistory", Value.fromStringArray(value));
   }
 }
