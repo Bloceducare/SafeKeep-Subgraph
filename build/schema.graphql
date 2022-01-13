@@ -29,6 +29,17 @@ type Backup @entity {
   backupAddress: Vault!
 }
 
+
+type AllocationHistory @entity {
+  id: ID!
+  receipient: Bytes!
+  amount: BigInt!
+  type: String!
+  assetAddress:Bytes
+  txHash:Bytes!
+  vault: Vault!
+}
+
 type Vault @entity {
   id: ID!
   createdAt: BigInt!
@@ -44,4 +55,7 @@ type Vault @entity {
   owner: Bytes!
   pings: [Ping!]! @derivedFrom(field: "pingtimestamp")
   backups: [Backup!]! @derivedFrom(field: "backupAddress")
+  allocationHistory: [AllocationHistory!]! @derivedFrom(field: "vault")
 }
+
+

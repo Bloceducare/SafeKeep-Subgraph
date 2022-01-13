@@ -303,6 +303,109 @@ export class Backup extends Entity {
   }
 }
 
+export class AllocationHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("receipient", Value.fromBytes(Bytes.empty()));
+    this.set("amount", Value.fromBigInt(BigInt.zero()));
+    this.set("type", Value.fromString(""));
+    this.set("txHash", Value.fromBytes(Bytes.empty()));
+    this.set("vault", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save AllocationHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save AllocationHistory entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("AllocationHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AllocationHistory | null {
+    return changetype<AllocationHistory | null>(
+      store.get("AllocationHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get receipient(): Bytes {
+    let value = this.get("receipient");
+    return value!.toBytes();
+  }
+
+  set receipient(value: Bytes) {
+    this.set("receipient", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get assetAddress(): Bytes | null {
+    let value = this.get("assetAddress");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set assetAddress(value: Bytes | null) {
+    if (!value) {
+      this.unset("assetAddress");
+    } else {
+      this.set("assetAddress", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get txHash(): Bytes {
+    let value = this.get("txHash");
+    return value!.toBytes();
+  }
+
+  set txHash(value: Bytes) {
+    this.set("txHash", Value.fromBytes(value));
+  }
+
+  get vault(): string {
+    let value = this.get("vault");
+    return value!.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
@@ -460,5 +563,14 @@ export class Vault extends Entity {
 
   set backups(value: Array<string>) {
     this.set("backups", Value.fromStringArray(value));
+  }
+
+  get allocationHistory(): Array<string> {
+    let value = this.get("allocationHistory");
+    return value!.toStringArray();
+  }
+
+  set allocationHistory(value: Array<string>) {
+    this.set("allocationHistory", Value.fromStringArray(value));
   }
 }
