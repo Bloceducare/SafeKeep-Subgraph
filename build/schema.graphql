@@ -4,7 +4,7 @@ type Token @entity {
   amount: BigInt
   amountAllocated: BigInt!
   owner: Vault!
-  ownerinheritor:Inheritor!
+  ownerinheritor: Inheritor!
 }
 
 type Inheritor @entity {
@@ -12,22 +12,36 @@ type Inheritor @entity {
   vaultId: [String!]!
   ethAllocated: BigInt!
   vaults: Vault!
-  tokens: [Token!]! @derivedFrom(field: "ownerinheritor") 
+  createdAt: BigInt!
+  tokens: [Token!]! @derivedFrom(field: "ownerinheritor")
+}
+
+type Ping @entity {
+  id: ID!
+  time: BigInt!
+  pingtimestamp: Vault!
+}
+
+type Backup @entity {
+  id: ID!
+  address: Bytes!
+  createdAt: BigInt!
+  backupAddress: Vault!
 }
 
 type Vault @entity {
   id: ID!
+  createdAt: BigInt!
   vaultId: BigInt!
   backup: Bytes!
+  currentBackupTime: BigInt!
   StartingAmount: BigInt!
   inherit: [String!]!
-  ethShares: [BigInt!]!
   totalEthAllocated: BigInt!
   tokensArray: [String!]!
   tokens: [Token!]! @derivedFrom(field: "owner")
-  inheritors:[Inheritor!]! @derivedFrom(field: "vaults") 
-  owner:Bytes!
-  
+  inheritors: [Inheritor!]! @derivedFrom(field: "vaults")
+  owner: Bytes!
+  pings: [Ping!]! @derivedFrom(field: "pingtimestamp")
+  backups: [Backup!]! @derivedFrom(field: "backupAddress")
 }
-
-

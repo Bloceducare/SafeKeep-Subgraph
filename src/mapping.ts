@@ -1,7 +1,6 @@
 import { bigInt, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts"
 
 import {
-  SafeKeep as SafeKeepContract,
   ClaimedEth as ClaimedEthEvent,
   EthAllocated as EthAllocatedEvent,
   EthDeposited as EthDepositedEvent,
@@ -15,13 +14,40 @@ import {
   vaultCreated as VaultCreatedEvent,
   tokensWithdrawn as TokensWithdrawnEvent,
   inheritorsAddedVaultCreated as InheritorsAddedVaultCreatedEvent,
+  pingVault as PingVaultEvent,
+  backupAddress as BackupAddressEvent,
   
   
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, Inheritor,  Vault } from "../generated/schema"
-
+import { Token, Inheritor,  Vault, Ping, Backup  } from "../generated/schema"
+ 
 import {findItemIndex, removeItems,} from './utils'
 
+export function handlepingVault(event: PingVaultEvent): void {
+  let vaultId = event.params.vaultId.toString()
+  let time = event.block.timestamp
+  let ping = new Ping(time.toString())
+  ping.time = time
+  ping.pingtimestamp = vaultId
+  ping.save()
+}
+
+export function handlebackupAddress(event: BackupAddressEvent): void {
+  let vaultId = event.params.vaultId.toString()
+  let backupAddress = event.params.backup
+  let backup = new Backup(event.block.timestamp.toString())
+  backup.address = backupAddress
+  backup.createdAt = event.block.timestamp
+  backup.backupAddress= vaultId
+  backup.save()
+
+  let vault = Vault.load(vaultId)
+  if (!vault) return
+  vault.currentBackupTime = event.block.timestamp
+  vault.backup = event.params.backup
+  vault.save()
+ 
+}
 
 export function handleinheritorsAddedVaultCreated(event: InheritorsAddedVaultCreatedEvent): void {}
 
@@ -37,31 +63,17 @@ export function handleClaimedEth(event: ClaimedEthEvent): void {
   }
 }
 
-
 export function handleEthAllocated(event: EthAllocatedEvent):void{
-  let id = event.params.vaultId.toString()
-  let inheritors =event.params.inheritors
+  let inheritors = event.params.inheritors
   let ethAllocations = event.params.amounts
-  let vault = Vault.load(id)
-  
-
-  if(!vault) return;
-  let share = vault.ethShares
-  let inheritorsList= vault.inherit
 
   for (let i = 0; i < inheritors.length; i++) {
     const inheritor = inheritors[i].toHexString();
     const ethAllocated = ethAllocations[i];
-    let inheritorsEntity = Inheritor.load(inheritor.toString())
+    let inheritorsEntity = Inheritor.load(inheritor)
     if(!inheritorsEntity)return;
     inheritorsEntity.ethAllocated = ethAllocated
-    inheritorsEntity.save()
-  
-    let idx = findItemIndex(inheritorsList, inheritor)
-    const sh = share.splice(i32(idx + 1), 1);
-    vault.ethShares = sh
-    vault.save()
-    
+    inheritorsEntity.save() 
   }
 
 }
@@ -93,7 +105,6 @@ export function handleOwnershipTransferred(event: OwnershipTransferredEvent): vo
 }
 
 
-
 export function handleclaimedTokens(event: ClaimedTokensEvent): void {
  
 }
@@ -101,63 +112,39 @@ export function handleclaimedTokens(event: ClaimedTokensEvent): void {
 
 export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
   let id = event.params.vaultId.toString()
-  let vault = Vault.load(id)
   let inAddress = event.params.newInheritors
+  let vault  = Vault.load(id)
   let amt = event.params.newWeiShares
-  if(vault){
-    let v = vault.inherit
-    let shares = vault.ethShares
+  if(!vault) return;
 
     for (let i = 0; i < inAddress.length; i++) {
       let inh = inAddress[i].toHexString()
-      v.push(inh)
-      let amount = amt[i]
-      shares.push(amount)
       let newInhertor =   new Inheritor(inh)
-      let arr = newInhertor.vaultId
-      arr.push(id)
-      newInhertor.vaultId = arr
+      newInhertor.ethAllocated = amt[i]
+      newInhertor.createdAt = event.block.timestamp
+      newInhertor.vaults = id
       newInhertor.save()
-    }
-    vault.inherit = v
-    vault.ethShares = shares
-    vault.save()
+      let totalAllocated = vault.totalEthAllocated.plus(amt[i])
+      vault.totalEthAllocated = totalAllocated
+      vault.save()
   }
 
 }
 
 
 export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
-  let id = event.params.vaultId.toString()
-  let vault = Vault.load(id)
   let inAddress = event.params.inheritors
-  let empty = ['']
-
+  let vault = Vault.load(event.params.vaultId.toString())
+  if(!vault) return;
   for (let i = 0; i < inAddress.length; i++) {
-    let inh = inAddress[i].toHexString()
-    store.remove('Inheritor', inh) //remove from Inheritor entity
-    empty.push(inh)
-    empty.shift()  //remove first element empty string
-
-  }
-    if(vault){
-    let arr = vault.inherit
-    let share = vault.ethShares
-
-
-    for (let i = 0; i < inAddress.length; i++) {
-      const inh = inAddress[i].toHexString()
-      const idx =  findItemIndex(vault.inherit, inh)    
-      const sh = share.splice(i32(idx + 1), 1);
-      vault.ethShares = sh
+      let inheritor = Inheritor.load(inAddress[i].toHexString())
+      if(!inheritor) return;
+      let allocated = inheritor.ethAllocated
+      let totalAllocated = vault.totalEthAllocated.minus(allocated)
+      vault.totalEthAllocated = totalAllocated
       vault.save()
-    }
-
-    let v = removeItems(arr, empty)
-    vault.inherit = v
-    vault.save()
-    
-  }    
+    store.remove('Inheritor', inAddress[i].toHexString()) //remove from Inheritor entity
+  }  
   }
 
 
@@ -169,16 +156,11 @@ export function handletokenAllocated(event: TokenAllocatedEvent): void {
   if(!token) return;
 
   for (let i = 0; i < inheritors.length; i++) {
-    const inheritor = inheritors[i].toHexString();
-    if(inheritor) return;
-    token.amountAllocated = tokenAllocations[i]
-    token.ownerinheritor = inheritor
+    const allocated = tokenAllocations[i];
+    token.amountAllocated = allocated
+    token.ownerinheritor = inheritors[i].toHexString()
     token.save()
-    
   }
-
-
-
 }
 
 
@@ -249,7 +231,9 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
 export function handlevaultCreated(event: VaultCreatedEvent): void { 
   let id = event.params.vaultId.toString()
   let inher = event.params.inheritors_
+  let backupAddress = event.params.backup
 
+  
   let vaultcreated = new Vault(id)  
   let em = [""]
 
@@ -265,7 +249,9 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
       inh.vaults = id
       inh.save()
   }
+
   
+
 
   let shares = [bigInt.fromString("0")]
   for (let i = 0; i < inher.length; i++) {
@@ -273,11 +259,19 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
    shares.shift();
   }
 
+  //backups
+  let backups = new Backup(event.block.timestamp.toString())
+ backups.address = backupAddress
+  backups.backupAddress= id
+  backups.createdAt = event.block.timestamp
+  backups.save()
+  
   vaultcreated.inherit = em 
- vaultcreated.ethShares = shares
   vaultcreated.backup = event.params.backup
+  vaultcreated.currentBackupTime = event.block.timestamp
   vaultcreated.StartingAmount = event.params.startingBalance
   vaultcreated.vaultId = event.params.vaultId
  vaultcreated.owner =  event.params.owner
+ vaultcreated.createdAt = event.block.timestamp
   vaultcreated.save()  
 }

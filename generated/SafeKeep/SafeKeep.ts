@@ -128,6 +128,28 @@ export class OwnershipTransferred__Params {
   }
 }
 
+export class backupAddress extends ethereum.Event {
+  get params(): backupAddress__Params {
+    return new backupAddress__Params(this);
+  }
+}
+
+export class backupAddress__Params {
+  _event: backupAddress;
+
+  constructor(event: backupAddress) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get backup(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class claimedTokens extends ethereum.Event {
   get params(): claimedTokens__Params {
     return new claimedTokens__Params(this);
@@ -225,6 +247,24 @@ export class inheritorsRemoved__Params {
 
   get inheritors(): Array<Address> {
     return this._event.parameters[1].value.toAddressArray();
+  }
+}
+
+export class pingVault extends ethereum.Event {
+  get params(): pingVault__Params {
+    return new pingVault__Params(this);
+  }
+}
+
+export class pingVault__Params {
+  _event: pingVault;
+
+  constructor(event: pingVault) {
+    this._event = event;
+  }
+
+  get vaultId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 }
 

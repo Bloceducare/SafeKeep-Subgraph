@@ -6,7 +6,7 @@ dataSources:
     name: SafeKeep
     network: rinkeby
     source:
-      address: "0x33A005A5A8cEA00bB9fA54341e742419A43Ef253"
+      address: "0x1e63ba99ab74D0796dd897CBc58A0e741a8a1acc"
       abi: SafeKeep
       startBlock: 9780138
     mapping:
@@ -49,4 +49,8 @@ dataSources:
           handler: handletokensWithdrawn
         - event: vaultCreated(indexed uint256,address,indexed address,indexed uint256,address[])
           handler: handlevaultCreated
+        - event: pingVault(uint256)
+          handler: handlepingVault
+        - event: backupAddress(uint256,address)
+          handler: handlebackupAddress
       file: SafeKeep\SafeKeep.wasm

@@ -110,6 +110,7 @@ export class Inheritor extends Entity {
     this.set("vaultId", Value.fromStringArray(new Array(0)));
     this.set("ethAllocated", Value.fromBigInt(BigInt.zero()));
     this.set("vaults", Value.fromString(""));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -165,6 +166,15 @@ export class Inheritor extends Entity {
     this.set("vaults", Value.fromString(value));
   }
 
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+
   get tokens(): Array<string> {
     let value = this.get("tokens");
     return value!.toStringArray();
@@ -175,16 +185,135 @@ export class Inheritor extends Entity {
   }
 }
 
+export class Ping extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("time", Value.fromBigInt(BigInt.zero()));
+    this.set("pingtimestamp", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Ping entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Ping entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Ping", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Ping | null {
+    return changetype<Ping | null>(store.get("Ping", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get time(): BigInt {
+    let value = this.get("time");
+    return value!.toBigInt();
+  }
+
+  set time(value: BigInt) {
+    this.set("time", Value.fromBigInt(value));
+  }
+
+  get pingtimestamp(): string {
+    let value = this.get("pingtimestamp");
+    return value!.toString();
+  }
+
+  set pingtimestamp(value: string) {
+    this.set("pingtimestamp", Value.fromString(value));
+  }
+}
+
+export class Backup extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("address", Value.fromBytes(Bytes.empty()));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
+    this.set("backupAddress", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Backup entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Backup entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Backup", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Backup | null {
+    return changetype<Backup | null>(store.get("Backup", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get address(): Bytes {
+    let value = this.get("address");
+    return value!.toBytes();
+  }
+
+  set address(value: Bytes) {
+    this.set("address", Value.fromBytes(value));
+  }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+
+  get backupAddress(): string {
+    let value = this.get("backupAddress");
+    return value!.toString();
+  }
+
+  set backupAddress(value: string) {
+    this.set("backupAddress", Value.fromString(value));
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
     this.set("vaultId", Value.fromBigInt(BigInt.zero()));
     this.set("backup", Value.fromBytes(Bytes.empty()));
+    this.set("currentBackupTime", Value.fromBigInt(BigInt.zero()));
     this.set("StartingAmount", Value.fromBigInt(BigInt.zero()));
     this.set("inherit", Value.fromStringArray(new Array(0)));
-    this.set("ethShares", Value.fromBigIntArray(new Array(0)));
     this.set("totalEthAllocated", Value.fromBigInt(BigInt.zero()));
     this.set("tokensArray", Value.fromStringArray(new Array(0)));
     this.set("owner", Value.fromBytes(Bytes.empty()));
@@ -216,6 +345,15 @@ export class Vault extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+
   get vaultId(): BigInt {
     let value = this.get("vaultId");
     return value!.toBigInt();
@@ -234,6 +372,15 @@ export class Vault extends Entity {
     this.set("backup", Value.fromBytes(value));
   }
 
+  get currentBackupTime(): BigInt {
+    let value = this.get("currentBackupTime");
+    return value!.toBigInt();
+  }
+
+  set currentBackupTime(value: BigInt) {
+    this.set("currentBackupTime", Value.fromBigInt(value));
+  }
+
   get StartingAmount(): BigInt {
     let value = this.get("StartingAmount");
     return value!.toBigInt();
@@ -250,15 +397,6 @@ export class Vault extends Entity {
 
   set inherit(value: Array<string>) {
     this.set("inherit", Value.fromStringArray(value));
-  }
-
-  get ethShares(): Array<BigInt> {
-    let value = this.get("ethShares");
-    return value!.toBigIntArray();
-  }
-
-  set ethShares(value: Array<BigInt>) {
-    this.set("ethShares", Value.fromBigIntArray(value));
   }
 
   get totalEthAllocated(): BigInt {
@@ -304,5 +442,23 @@ export class Vault extends Entity {
 
   set owner(value: Bytes) {
     this.set("owner", Value.fromBytes(value));
+  }
+
+  get pings(): Array<string> {
+    let value = this.get("pings");
+    return value!.toStringArray();
+  }
+
+  set pings(value: Array<string>) {
+    this.set("pings", Value.fromStringArray(value));
+  }
+
+  get backups(): Array<string> {
+    let value = this.get("backups");
+    return value!.toStringArray();
+  }
+
+  set backups(value: Array<string>) {
+    this.set("backups", Value.fromStringArray(value));
   }
 }
