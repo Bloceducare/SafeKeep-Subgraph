@@ -311,8 +311,8 @@ export class AllocationHistory extends Entity {
     this.set("receipient", Value.fromBytes(Bytes.empty()));
     this.set("amount", Value.fromBigInt(BigInt.zero()));
     this.set("type", Value.fromString(""));
-    this.set("txHash", Value.fromBytes(Bytes.empty()));
     this.set("vault", Value.fromString(""));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -387,15 +387,6 @@ export class AllocationHistory extends Entity {
     }
   }
 
-  get txHash(): Bytes {
-    let value = this.get("txHash");
-    return value!.toBytes();
-  }
-
-  set txHash(value: Bytes) {
-    this.set("txHash", Value.fromBytes(value));
-  }
-
   get vault(): string {
     let value = this.get("vault");
     return value!.toString();
@@ -403,6 +394,15 @@ export class AllocationHistory extends Entity {
 
   set vault(value: string) {
     this.set("vault", Value.fromString(value));
+  }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
   }
 }
 
@@ -413,8 +413,8 @@ export class InheritorHistory extends Entity {
 
     this.set("inheritor", Value.fromBytes(Bytes.empty()));
     this.set("type", Value.fromString(""));
-    this.set("txHash", Value.fromBytes(Bytes.empty()));
     this.set("vault", Value.fromString(""));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -463,13 +463,92 @@ export class InheritorHistory extends Entity {
     this.set("type", Value.fromString(value));
   }
 
-  get txHash(): Bytes {
-    let value = this.get("txHash");
+  get vault(): string {
+    let value = this.get("vault");
+    return value!.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+}
+
+export class TokenTransactionHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("tokenAddress", Value.fromBytes(Bytes.empty()));
+    this.set("amount", Value.fromBigInt(BigInt.zero()));
+    this.set("type", Value.fromString(""));
+    this.set("vault", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save TokenTransactionHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save TokenTransactionHistory entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("TokenTransactionHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): TokenTransactionHistory | null {
+    return changetype<TokenTransactionHistory | null>(
+      store.get("TokenTransactionHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get tokenAddress(): Bytes {
+    let value = this.get("tokenAddress");
     return value!.toBytes();
   }
 
-  set txHash(value: Bytes) {
-    this.set("txHash", Value.fromBytes(value));
+  set tokenAddress(value: Bytes) {
+    this.set("tokenAddress", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
   }
 
   get vault(): string {
@@ -657,5 +736,14 @@ export class Vault extends Entity {
 
   set inheritorHistory(value: Array<string>) {
     this.set("inheritorHistory", Value.fromStringArray(value));
+  }
+
+  get tokenTransactionHistory(): Array<string> {
+    let value = this.get("tokenTransactionHistory");
+    return value!.toStringArray();
+  }
+
+  set tokenTransactionHistory(value: Array<string>) {
+    this.set("tokenTransactionHistory", Value.fromStringArray(value));
   }
 }

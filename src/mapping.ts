@@ -19,7 +19,7 @@ import {
   
   
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory, InheritorHistory  } from "../generated/schema"
+import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory, InheritorHistory, TokenTransactionHistory  } from "../generated/schema"
  
 import {findItemIndex,} from './utils'
 
@@ -76,13 +76,13 @@ export function handleEthAllocated(event: EthAllocatedEvent):void{
     inheritorsEntity.ethAllocated = ethAllocated
     inheritorsEntity.save() 
 
-      //allocation
-    let allocation = new AllocationHistory(event.block.timestamp.toString())
+      //allocation history
+    let allocation = new AllocationHistory(event.transaction.hash.toHexString())
     allocation.vault = id
      allocation.type= 'eth'
      allocation.amount = ethAllocated
      allocation.receipient = inheritors[i]
-    allocation.txHash = event.transaction.hash
+    allocation.createdAt = event.block.timestamp
      allocation.save()
   }
 
@@ -93,22 +93,39 @@ export function handleEthAllocated(event: EthAllocatedEvent):void{
 
 export function handleEthDeposited(event: EthDepositedEvent): void {
  let vault = Vault.load(event.params.vaultId.toString())
+ let id = event.params.vaultId.toString()
+ let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
+
 if(vault){
  let prevAmt = vault.StartingAmount
  let currentAmt = event.params._amount
  vault.StartingAmount = currentAmt.plus(prevAmt)
   vault.save()
+
+  tokenHistory.vault = id
+  tokenHistory.type = 'plus'
+  tokenHistory.tokenAddress = new Bytes(0x1)
+  tokenHistory.amount = event.params._amount
+  tokenHistory.save()
 }
 
 }
 
 export function handleEthWithdrawn(event: EthWithdrawnEvent): void {
   let vault = Vault.load(event.params.vaultId.toString())
+  let id = event.params.vaultId.toString()
+  let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
   if(vault){
    let prevAmt = vault.StartingAmount
    let currentAmt = event.params._amount
    vault.StartingAmount = prevAmt.minus(currentAmt)
     vault.save()
+
+    tokenHistory.vault = id
+    tokenHistory.type = 'minus'
+    tokenHistory.tokenAddress = new Bytes(0x1)
+    tokenHistory.amount = event.params._amount
+    tokenHistory.save()
   }
  
 }
@@ -142,10 +159,11 @@ export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
       vault.save()
 
          //inheritor history
-     let inheritorHistory = new InheritorHistory(event.block.timestamp.toString())
+     let inheritorHistory = new InheritorHistory(event.block.hash.toHexString())
         inheritorHistory.vault = id
         inheritorHistory.type= 'plus'
         inheritorHistory.inheritor = inAddress[i]
+        inheritorHistory.createdAt = event.block.timestamp
         inheritorHistory.save()
   
   }
@@ -167,12 +185,13 @@ export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
       vault.save()
     store.remove('Inheritor', inAddress[i].toHexString()) //remove from Inheritor entity
     
-      //inheritor history
-      let inheritorHistory = new InheritorHistory(event.block.timestamp.toString())
-      inheritorHistory.vault = id
-      inheritorHistory.type= 'minus'
-      inheritorHistory.inheritor = inAddress[i]
-      inheritorHistory.save()
+         //inheritor history
+         let inheritorHistory = new InheritorHistory(event.block.hash.toHexString())
+         inheritorHistory.vault = id
+         inheritorHistory.type= 'minus'
+         inheritorHistory.inheritor = inAddress[i]
+         inheritorHistory.createdAt = event.block.timestamp
+         inheritorHistory.save()
   }  
   }
 
@@ -191,15 +210,15 @@ export function handletokenAllocated(event: TokenAllocatedEvent): void {
     token.ownerinheritor = inheritors[i].toHexString()
     token.save()
 
-     //allocation
-     let allocation = new AllocationHistory(event.block.timestamp.toString())
+     //allocation history
+     let allocation = new AllocationHistory(event.transaction.hash.toHexString())
      allocation.vault = id
       allocation.type= 'tokens'
       allocation.amount = allocated
       allocation.assetAddress = tokenAddress
       allocation.receipient = inheritors[i]
-      allocation.txHash = event.transaction.hash
-      allocation.save()
+     allocation.createdAt = event.block.timestamp
+      allocation.save()  
   }
 }
 
@@ -208,6 +227,7 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
   let vault = Vault.load(event.params.vaultId.toString())
   let tokenAddress = event.params.tokens
   let amt = event.params.amounts
+  let id = event.params.vaultId.toString()
 
   if(!vault) return
     for (let i = 0; i < tokenAddress.length; i++) {  
@@ -220,14 +240,14 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
      
         newToken.amount = amt[i]
         newToken.tokenAddress = element
-        newToken.owner = event.params.vaultId.toString()
-        
+        newToken.owner = event.params.vaultId.toString()      
         newToken.save()
 
         tokenList.push(element.toHexString())
         tokenList.push(amt[i].toString())
         vault.tokensArray = tokenList
         vault.save()
+
       }
 
       if(token){
@@ -246,7 +266,16 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
          
           token.save()
         }
-      }      
+      }
+      
+      
+              //token history
+              let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
+              tokenHistory.vault = id 
+              tokenHistory.type = 'plus'  
+              tokenHistory.tokenAddress = element
+              tokenHistory.amount = amt[i]
+              tokenHistory.save()
     }
 }
 
@@ -263,6 +292,15 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
       if(!prevAmt) return;
       token.amount = prevAmt.minus(currentAmt)
        token.save()
+
+        //token history
+        let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
+        tokenHistory.vault = event.params.vaultId.toString()
+        tokenHistory.type = 'minus'
+        tokenHistory.tokenAddress = element
+        tokenHistory.amount = currentAmt
+        tokenHistory.save()
+        
     }
   
 }

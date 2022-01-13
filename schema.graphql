@@ -36,17 +36,25 @@ type AllocationHistory @entity {
   amount: BigInt!
   type: String!
   assetAddress:Bytes
-  txHash:Bytes!
   vault: Vault!
+  createdAt: BigInt!
 }
 
 type InheritorHistory @entity {
   id:ID!
   inheritor:Bytes!
   type:String!
-  txHash:Bytes!
   vault: Vault!
+  createdAt: BigInt!
 
+}
+
+type TokenTransactionHistory @entity {
+  id:ID!
+  tokenAddress:Bytes!
+  amount:BigInt!
+  type:String!
+  vault: Vault!
 }
 
 type Vault @entity {
@@ -66,6 +74,7 @@ type Vault @entity {
   backups: [Backup!]! @derivedFrom(field: "backupAddress")
   allocationHistory: [AllocationHistory!]! @derivedFrom(field: "vault")
   inheritorHistory: [InheritorHistory!]! @derivedFrom(field: "vault")
+  tokenTransactionHistory: [TokenTransactionHistory!]! @derivedFrom(field: "vault")
 }
 
 
