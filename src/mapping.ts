@@ -19,7 +19,7 @@ import {
   
   
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory  } from "../generated/schema"
+import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory, InheritorHistory  } from "../generated/schema"
  
 import {findItemIndex,} from './utils'
 
@@ -140,6 +140,14 @@ export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
       let totalAllocated = vault.totalEthAllocated.plus(amt[i])
       vault.totalEthAllocated = totalAllocated
       vault.save()
+
+         //inheritor history
+     let inheritorHistory = new InheritorHistory(event.block.timestamp.toString())
+        inheritorHistory.vault = id
+        inheritorHistory.type= 'plus'
+        inheritorHistory.inheritor = inAddress[i]
+        inheritorHistory.save()
+  
   }
 
 }
@@ -148,6 +156,7 @@ export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
 export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
   let inAddress = event.params.inheritors
   let vault = Vault.load(event.params.vaultId.toString())
+  let id = event.params.vaultId.toString()
   if(!vault) return;
   for (let i = 0; i < inAddress.length; i++) {
       let inheritor = Inheritor.load(inAddress[i].toHexString())
@@ -157,6 +166,13 @@ export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
       vault.totalEthAllocated = totalAllocated
       vault.save()
     store.remove('Inheritor', inAddress[i].toHexString()) //remove from Inheritor entity
+    
+      //inheritor history
+      let inheritorHistory = new InheritorHistory(event.block.timestamp.toString())
+      inheritorHistory.vault = id
+      inheritorHistory.type= 'minus'
+      inheritorHistory.inheritor = inAddress[i]
+      inheritorHistory.save()
   }  
   }
 

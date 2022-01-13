@@ -40,6 +40,15 @@ type AllocationHistory @entity {
   vault: Vault!
 }
 
+type InheritorHistory @entity {
+  id:ID!
+  inheritor:Bytes!
+  type:String!
+  txHash:Bytes!
+  vault: Vault!
+
+}
+
 type Vault @entity {
   id: ID!
   createdAt: BigInt!
@@ -56,6 +65,7 @@ type Vault @entity {
   pings: [Ping!]! @derivedFrom(field: "pingtimestamp")
   backups: [Backup!]! @derivedFrom(field: "backupAddress")
   allocationHistory: [AllocationHistory!]! @derivedFrom(field: "vault")
+  inheritorHistory: [InheritorHistory!]! @derivedFrom(field: "vault")
 }
 
 
