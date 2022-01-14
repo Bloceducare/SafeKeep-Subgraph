@@ -94,19 +94,28 @@ export function handleEthAllocated(event: EthAllocatedEvent):void{
 export function handleEthDeposited(event: EthDepositedEvent): void {
  let vault = Vault.load(event.params.vaultId.toString())
  let id = event.params.vaultId.toString()
- let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
+ 
+ if(vault){
+   let prevAmt = vault.StartingAmount
+   let currentAmt = event.params._amount
+   vault.StartingAmount = currentAmt.plus(prevAmt)
+   vault.save()
+   
 
-if(vault){
- let prevAmt = vault.StartingAmount
- let currentAmt = event.params._amount
- vault.StartingAmount = currentAmt.plus(prevAmt)
-  vault.save()
-
+   let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
   tokenHistory.vault = id
   tokenHistory.type = 'plus'
   tokenHistory.tokenAddress = new Bytes(0x1)
   tokenHistory.amount = event.params._amount
+  tokenHistory.createdAt = event.block.timestamp 
   tokenHistory.save()
+
+  
+  let loadVaults = Vault.load(event.params.vaultId.toString())
+  if(!loadVaults) return;
+  let prevValue = loadVaults.tokenTransactionHistoryRecords
+  loadVaults.tokenTransactionHistoryRecords = prevValue.plus(new BigInt(1))
+  loadVaults.save()
 }
 
 }
@@ -124,8 +133,16 @@ export function handleEthWithdrawn(event: EthWithdrawnEvent): void {
     tokenHistory.vault = id
     tokenHistory.type = 'minus'
     tokenHistory.tokenAddress = new Bytes(0x1)
+    tokenHistory.createdAt = event.block.timestamp 
     tokenHistory.amount = event.params._amount
+    
     tokenHistory.save()
+
+    let loadVaults = Vault.load(event.params.vaultId.toString())
+    if(!loadVaults) return;
+    let prevHistoryCount = loadVaults.tokenTransactionHistoryRecords        
+    loadVaults.tokenTransactionHistoryRecords = prevHistoryCount.plus(new BigInt(1))
+    loadVaults.save()
   }
  
 }
@@ -208,6 +225,7 @@ export function handletokenAllocated(event: TokenAllocatedEvent): void {
     const allocated = tokenAllocations[i];
     token.amountAllocated = allocated
     token.ownerinheritor = inheritors[i].toHexString()
+    token.allocated = allocated
     token.save()
 
      //allocation history
@@ -275,10 +293,17 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
               tokenHistory.type = 'plus'  
               tokenHistory.tokenAddress = element
               tokenHistory.amount = amt[i]
+              tokenHistory.createdAt = event.block.timestamp 
               tokenHistory.save()
+              
+              let loadVaults = Vault.load(event.params.vaultId.toString())
+              if(!loadVaults) return;
+              let prevHistoryCount = loadVaults.tokenTransactionHistoryRecords
+              loadVaults.tokenTransactionHistoryRecords = prevHistoryCount.plus(new BigInt(1))
+              loadVaults.save()
     }
 }
-
+ 
 export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
   let tokenAddress = event.params.tokens
   let amt = event.params.amounts
@@ -299,8 +324,14 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
         tokenHistory.type = 'minus'
         tokenHistory.tokenAddress = element
         tokenHistory.amount = currentAmt
+        tokenHistory.createdAt = event.block.timestamp 
         tokenHistory.save()
-        
+        let loadVaults = Vault.load(event.params.vaultId.toString())
+        if(!loadVaults) return;
+        let prevHistoryCount = loadVaults.tokenTransactionHistoryRecords
+        loadVaults.tokenTransactionHistoryRecords = prevHistoryCount.plus(new BigInt(1))
+        loadVaults.save()
+
     }
   
 }

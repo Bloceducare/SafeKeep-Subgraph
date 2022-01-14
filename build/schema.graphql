@@ -5,6 +5,7 @@ type Token @entity {
   amountAllocated: BigInt!
   owner: Vault!
   ownerinheritor: Inheritor!
+  allocated: BigInt!
 }
 
 type Inheritor @entity {
@@ -29,32 +30,31 @@ type Backup @entity {
   backupAddress: Vault!
 }
 
-
 type AllocationHistory @entity {
   id: ID!
   receipient: Bytes!
   amount: BigInt!
   type: String!
-  assetAddress:Bytes
+  assetAddress: Bytes
   vault: Vault!
   createdAt: BigInt!
 }
 
 type InheritorHistory @entity {
-  id:ID!
-  inheritor:Bytes!
-  type:String!
+  id: ID!
+  inheritor: Bytes!
+  type: String!
   vault: Vault!
   createdAt: BigInt!
-
 }
 
 type TokenTransactionHistory @entity {
-  id:ID!
-  tokenAddress:Bytes!
-  amount:BigInt!
-  type:String!
+  id: ID!
+  tokenAddress: Bytes!
+  amount: BigInt!
+  type: String!
   vault: Vault!
+  createdAt: BigInt!
 }
 
 type Vault @entity {
@@ -71,10 +71,14 @@ type Vault @entity {
   inheritors: [Inheritor!]! @derivedFrom(field: "vaults")
   owner: Bytes!
   pings: [Ping!]! @derivedFrom(field: "pingtimestamp")
+  pingsRecords: BigInt!
   backups: [Backup!]! @derivedFrom(field: "backupAddress")
+  backupsRecords: BigInt
   allocationHistory: [AllocationHistory!]! @derivedFrom(field: "vault")
+  allocationHistoryRecords: BigInt!
   inheritorHistory: [InheritorHistory!]! @derivedFrom(field: "vault")
-  tokenTransactionHistory: [TokenTransactionHistory!]! @derivedFrom(field: "vault")
+  inheritorHistoryRecords: BigInt!
+  tokenTransactionHistory: [TokenTransactionHistory!]!
+    @derivedFrom(field: "vault")
+  tokenTransactionHistoryRecords: BigInt!
 }
-
-
