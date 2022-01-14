@@ -20,6 +20,7 @@ export class Token extends Entity {
     this.set("amountAllocated", Value.fromBigInt(BigInt.zero()));
     this.set("owner", Value.fromString(""));
     this.set("ownerinheritor", Value.fromString(""));
+    this.set("allocated", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -99,6 +100,15 @@ export class Token extends Entity {
 
   set ownerinheritor(value: string) {
     this.set("ownerinheritor", Value.fromString(value));
+  }
+
+  get allocated(): BigInt {
+    let value = this.get("allocated");
+    return value!.toBigInt();
+  }
+
+  set allocated(value: BigInt) {
+    this.set("allocated", Value.fromBigInt(value));
   }
 }
 
@@ -491,6 +501,7 @@ export class TokenTransactionHistory extends Entity {
     this.set("amount", Value.fromBigInt(BigInt.zero()));
     this.set("type", Value.fromString(""));
     this.set("vault", Value.fromString(""));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -559,6 +570,15 @@ export class TokenTransactionHistory extends Entity {
   set vault(value: string) {
     this.set("vault", Value.fromString(value));
   }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
 }
 
 export class Vault extends Entity {
@@ -575,6 +595,10 @@ export class Vault extends Entity {
     this.set("totalEthAllocated", Value.fromBigInt(BigInt.zero()));
     this.set("tokensArray", Value.fromStringArray(new Array(0)));
     this.set("owner", Value.fromBytes(Bytes.empty()));
+    this.set("pingsRecords", Value.fromBigInt(BigInt.zero()));
+    this.set("allocationHistoryRecords", Value.fromBigInt(BigInt.zero()));
+    this.set("inheritorHistoryRecords", Value.fromBigInt(BigInt.zero()));
+    this.set("tokenTransactionHistoryRecords", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -711,6 +735,15 @@ export class Vault extends Entity {
     this.set("pings", Value.fromStringArray(value));
   }
 
+  get pingsRecords(): BigInt {
+    let value = this.get("pingsRecords");
+    return value!.toBigInt();
+  }
+
+  set pingsRecords(value: BigInt) {
+    this.set("pingsRecords", Value.fromBigInt(value));
+  }
+
   get backups(): Array<string> {
     let value = this.get("backups");
     return value!.toStringArray();
@@ -718,6 +751,23 @@ export class Vault extends Entity {
 
   set backups(value: Array<string>) {
     this.set("backups", Value.fromStringArray(value));
+  }
+
+  get backupsRecords(): BigInt | null {
+    let value = this.get("backupsRecords");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set backupsRecords(value: BigInt | null) {
+    if (!value) {
+      this.unset("backupsRecords");
+    } else {
+      this.set("backupsRecords", Value.fromBigInt(<BigInt>value));
+    }
   }
 
   get allocationHistory(): Array<string> {
@@ -729,6 +779,15 @@ export class Vault extends Entity {
     this.set("allocationHistory", Value.fromStringArray(value));
   }
 
+  get allocationHistoryRecords(): BigInt {
+    let value = this.get("allocationHistoryRecords");
+    return value!.toBigInt();
+  }
+
+  set allocationHistoryRecords(value: BigInt) {
+    this.set("allocationHistoryRecords", Value.fromBigInt(value));
+  }
+
   get inheritorHistory(): Array<string> {
     let value = this.get("inheritorHistory");
     return value!.toStringArray();
@@ -738,6 +797,15 @@ export class Vault extends Entity {
     this.set("inheritorHistory", Value.fromStringArray(value));
   }
 
+  get inheritorHistoryRecords(): BigInt {
+    let value = this.get("inheritorHistoryRecords");
+    return value!.toBigInt();
+  }
+
+  set inheritorHistoryRecords(value: BigInt) {
+    this.set("inheritorHistoryRecords", Value.fromBigInt(value));
+  }
+
   get tokenTransactionHistory(): Array<string> {
     let value = this.get("tokenTransactionHistory");
     return value!.toStringArray();
@@ -745,5 +813,14 @@ export class Vault extends Entity {
 
   set tokenTransactionHistory(value: Array<string>) {
     this.set("tokenTransactionHistory", Value.fromStringArray(value));
+  }
+
+  get tokenTransactionHistoryRecords(): BigInt {
+    let value = this.get("tokenTransactionHistoryRecords");
+    return value!.toBigInt();
+  }
+
+  set tokenTransactionHistoryRecords(value: BigInt) {
+    this.set("tokenTransactionHistoryRecords", Value.fromBigInt(value));
   }
 }
