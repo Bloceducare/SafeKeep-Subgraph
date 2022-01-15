@@ -1,3 +1,13 @@
+type SingleTokenHistory @entity {
+  id: ID!
+  amount: BigInt!
+  type: String!
+  hash: Bytes!
+  createdAt: BigInt!
+  token: Token!
+  address: Bytes!
+}
+
 type Token @entity {
   id: ID!
   tokenAddress: Bytes!
@@ -6,6 +16,7 @@ type Token @entity {
   owner: Vault!
   ownerinheritor: Inheritor!
   allocated: BigInt!
+  history: [SingleTokenHistory!]! @derivedFrom(field: "token")
 }
 
 type Inheritor @entity {

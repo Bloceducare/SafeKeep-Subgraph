@@ -19,7 +19,7 @@ import {
   
   
 } from "../generated/SafeKeep/SafeKeep"
-import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory, InheritorHistory, TokenTransactionHistory  } from "../generated/schema"
+import { Token, Inheritor,  Vault, Ping, Backup, AllocationHistory, InheritorHistory, TokenTransactionHistory, SingleTokenHistory  } from "../generated/schema"
  
 import {findItemIndex,} from './utils'
 
@@ -94,6 +94,17 @@ export function handleEthAllocated(event: EthAllocatedEvent):void{
 export function handleEthDeposited(event: EthDepositedEvent): void {
  let vault = Vault.load(event.params.vaultId.toString())
  let id = event.params.vaultId.toString()
+
+ let add = new Bytes(0x1).toHexString()
+ let singleHistory = new SingleTokenHistory(event.block.hash.toHexString())
+
+ singleHistory.token = add
+ singleHistory.amount = event.params._amount
+ singleHistory.type = 'in'
+ singleHistory.createdAt = event.block.timestamp
+ singleHistory.address = new Bytes(0x1)
+ singleHistory.hash = event.transaction.hash
+ singleHistory.save()
  
  if(vault){
    let prevAmt = vault.StartingAmount
@@ -137,6 +148,19 @@ export function handleEthWithdrawn(event: EthWithdrawnEvent): void {
     tokenHistory.amount = event.params._amount
     
     tokenHistory.save()
+
+
+
+    let add = new Bytes(0x1).toHexString()
+    let singleHistory = new SingleTokenHistory(event.block.hash.toHexString())
+    singleHistory.token = add
+    singleHistory.amount = event.params._amount
+    singleHistory.type = 'out'
+    singleHistory.createdAt = event.block.timestamp
+    singleHistory.address = new Bytes(0x1)
+    singleHistory.hash = event.transaction.hash
+    singleHistory.save()
+
 
     let loadVaults = Vault.load(event.params.vaultId.toString())
     if(!loadVaults) return;
@@ -253,12 +277,13 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
       const element = tokenAddress[i];
       let newToken = new Token(element.toHexString())
       let token  = Token.load(element.toHexString())
-      if(!token) {
-      
-     
+      let singleHistory = new SingleTokenHistory(event.block.hash.toHexString())
+
+   
+      if(!token) {    
         newToken.amount = amt[i]
         newToken.tokenAddress = element
-        newToken.owner = event.params.vaultId.toString()      
+        newToken.owner = event.params.vaultId.toString()    
         newToken.save()
 
         tokenList.push(element.toHexString())
@@ -295,6 +320,15 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
               tokenHistory.amount = amt[i]
               tokenHistory.createdAt = event.block.timestamp 
               tokenHistory.save()
+
+              
+              singleHistory.token = element.toHexString()
+              singleHistory.amount = amt[i]
+              singleHistory.type = 'in'
+              singleHistory.createdAt = event.block.timestamp
+              singleHistory.address = element
+              singleHistory.hash = event.transaction.hash
+              singleHistory.save()
               
               let loadVaults = Vault.load(event.params.vaultId.toString())
               if(!loadVaults) return;
@@ -309,6 +343,9 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
   let amt = event.params.amounts
     for (let i = 0; i < tokenAddress.length; i++) {
       const element = tokenAddress[i];
+
+      let singleHistory = new SingleTokenHistory(event.block.hash.toHexString())
+
       let token  = Token.load(element.toHexString())
       if(!token) return
 
@@ -318,6 +355,13 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
       token.amount = prevAmt.minus(currentAmt)
        token.save()
 
+    singleHistory.token = element.toHexString()
+    singleHistory.amount = amt[i]
+    singleHistory.type = 'out'
+    singleHistory.address = element
+    singleHistory.createdAt = event.block.timestamp
+    singleHistory.hash = event.transaction.hash
+    singleHistory.save()
         //token history
         let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
         tokenHistory.vault = event.params.vaultId.toString()
@@ -341,6 +385,7 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
   let id = event.params.vaultId.toString()
   let inher = event.params.inheritors_
   let backupAddress = event.params.backup
+  let add = new Bytes(0x1)
 
   
   let vaultcreated = new Vault(id)  
@@ -357,6 +402,13 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
       inh.vaultId = arr
       inh.vaults = id
       inh.save()
+
+        //tokens
+  let tokens = new Token(add.toHexString())
+  tokens.owner = id
+  tokens.amount = event.params.startingBalance
+  tokens.tokenAddress = add
+  tokens.save()
   }
 
   
@@ -374,6 +426,13 @@ export function handlevaultCreated(event: VaultCreatedEvent): void {
   backups.backupAddress= id
   backups.createdAt = event.block.timestamp
   backups.save()
+
+  //tokens
+  let tokens = new Token(add.toHexString())
+  tokens.owner = id
+  tokens.amount = event.params.startingBalance
+  tokens.tokenAddress = add
+  tokens.save()
   
   vaultcreated.inherit = em 
   vaultcreated.backup = event.params.backup
