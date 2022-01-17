@@ -115,7 +115,7 @@ export function handleEthDeposited(event: EthDepositedEvent): void {
 
    let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
   tokenHistory.vault = id
-  tokenHistory.type = 'plus'
+  tokenHistory.type = "in"
   tokenHistory.tokenAddress = new Bytes(0x1)
   tokenHistory.amount = event.params._amount
   tokenHistory.createdAt = event.block.timestamp 
@@ -142,7 +142,7 @@ export function handleEthWithdrawn(event: EthWithdrawnEvent): void {
     vault.save()
 
     tokenHistory.vault = id
-    tokenHistory.type = 'minus'
+    tokenHistory.type = "out"
     tokenHistory.tokenAddress = new Bytes(0x1)
     tokenHistory.createdAt = event.block.timestamp 
     tokenHistory.amount = event.params._amount
@@ -202,7 +202,7 @@ export function handleinheritorsAdded(event: InheritorsAddedEvent): void {
          //inheritor history
      let inheritorHistory = new InheritorHistory(event.block.hash.toHexString())
         inheritorHistory.vault = id
-        inheritorHistory.type= 'plus'
+        inheritorHistory.type= "in"
         inheritorHistory.inheritor = inAddress[i]
         inheritorHistory.createdAt = event.block.timestamp
         inheritorHistory.save()
@@ -229,7 +229,7 @@ export function handleinheritorsRemoved(event: InheritorsRemovedEvent): void {
          //inheritor history
          let inheritorHistory = new InheritorHistory(event.block.hash.toHexString())
          inheritorHistory.vault = id
-         inheritorHistory.type= 'minus'
+         inheritorHistory.type= ""
          inheritorHistory.inheritor = inAddress[i]
          inheritorHistory.createdAt = event.block.timestamp
          inheritorHistory.save()
@@ -315,7 +315,7 @@ export function handletokensDeposited(event: TokensDepositedEvent): void {
               //token history
               let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
               tokenHistory.vault = id 
-              tokenHistory.type = 'plus'  
+              tokenHistory.type = "in"  
               tokenHistory.tokenAddress = element
               tokenHistory.amount = amt[i]
               tokenHistory.createdAt = event.block.timestamp 
@@ -365,7 +365,7 @@ export function handletokensWithdrawn(event: TokensWithdrawnEvent): void {
         //token history
         let tokenHistory = new TokenTransactionHistory(event.transaction.hash.toHexString())
         tokenHistory.vault = event.params.vaultId.toString()
-        tokenHistory.type = 'minus'
+        tokenHistory.type = ""
         tokenHistory.tokenAddress = element
         tokenHistory.amount = currentAmt
         tokenHistory.createdAt = event.block.timestamp 
