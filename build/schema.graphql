@@ -68,6 +68,23 @@ type TokenTransactionHistory @entity {
   createdAt: BigInt!
 }
 
+type NativeToken @entity {
+  id: ID!
+  amount: BigInt
+  amountAllocated: BigInt!
+  vault: Vault!
+  allocated: BigInt!
+}
+
+type NativeHistory @entity {
+  id: ID!
+  amount: BigInt!
+  type: String!
+  vault: Vault!
+  createdAt: BigInt!
+  typeTag:String!
+}
+
 type Vault @entity {
   id: ID!
   createdAt: BigInt!
@@ -92,4 +109,6 @@ type Vault @entity {
   tokenTransactionHistory: [TokenTransactionHistory!]!
     @derivedFrom(field: "vault")
   tokenTransactionHistoryRecords: BigInt!
+  nativeToken: [NativeToken!]! @derivedFrom(field: "vault")
+  nativeHistory: [NativeHistory!]! @derivedFrom(field: "vault")
 }
