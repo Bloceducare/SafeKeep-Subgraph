@@ -686,6 +686,171 @@ export class TokenTransactionHistory extends Entity {
   }
 }
 
+export class NativeToken extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("amountAllocated", Value.fromBigInt(BigInt.zero()));
+    this.set("vault", Value.fromString(""));
+    this.set("allocated", Value.fromBigInt(BigInt.zero()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save NativeToken entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save NativeToken entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("NativeToken", id.toString(), this);
+    }
+  }
+
+  static load(id: string): NativeToken | null {
+    return changetype<NativeToken | null>(store.get("NativeToken", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get amount(): BigInt | null {
+    let value = this.get("amount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set amount(value: BigInt | null) {
+    if (!value) {
+      this.unset("amount");
+    } else {
+      this.set("amount", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get amountAllocated(): BigInt {
+    let value = this.get("amountAllocated");
+    return value!.toBigInt();
+  }
+
+  set amountAllocated(value: BigInt) {
+    this.set("amountAllocated", Value.fromBigInt(value));
+  }
+
+  get vault(): string {
+    let value = this.get("vault");
+    return value!.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+
+  get allocated(): BigInt {
+    let value = this.get("allocated");
+    return value!.toBigInt();
+  }
+
+  set allocated(value: BigInt) {
+    this.set("allocated", Value.fromBigInt(value));
+  }
+}
+
+export class NativeHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("amount", Value.fromBigInt(BigInt.zero()));
+    this.set("type", Value.fromString(""));
+    this.set("vault", Value.fromString(""));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
+    this.set("typeTag", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save NativeHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save NativeHistory entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("NativeHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): NativeHistory | null {
+    return changetype<NativeHistory | null>(store.get("NativeHistory", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get type(): string {
+    let value = this.get("type");
+    return value!.toString();
+  }
+
+  set type(value: string) {
+    this.set("type", Value.fromString(value));
+  }
+
+  get vault(): string {
+    let value = this.get("vault");
+    return value!.toString();
+  }
+
+  set vault(value: string) {
+    this.set("vault", Value.fromString(value));
+  }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+
+  get typeTag(): string {
+    let value = this.get("typeTag");
+    return value!.toString();
+  }
+
+  set typeTag(value: string) {
+    this.set("typeTag", Value.fromString(value));
+  }
+}
+
 export class Vault extends Entity {
   constructor(id: string) {
     super();
@@ -927,5 +1092,23 @@ export class Vault extends Entity {
 
   set tokenTransactionHistoryRecords(value: BigInt) {
     this.set("tokenTransactionHistoryRecords", Value.fromBigInt(value));
+  }
+
+  get nativeToken(): Array<string> {
+    let value = this.get("nativeToken");
+    return value!.toStringArray();
+  }
+
+  set nativeToken(value: Array<string>) {
+    this.set("nativeToken", Value.fromStringArray(value));
+  }
+
+  get nativeHistory(): Array<string> {
+    let value = this.get("nativeHistory");
+    return value!.toStringArray();
+  }
+
+  set nativeHistory(value: Array<string>) {
+    this.set("nativeHistory", Value.fromStringArray(value));
   }
 }
