@@ -22,6 +22,8 @@ export class SingleTokenHistory extends Entity {
     this.set("createdAt", Value.fromBigInt(BigInt.zero()));
     this.set("token", Value.fromString(""));
     this.set("address", Value.fromBytes(Bytes.empty()));
+    this.set("nonce", Value.fromBigInt(BigInt.zero()));
+    this.set("fee", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -104,6 +106,24 @@ export class SingleTokenHistory extends Entity {
 
   set address(value: Bytes) {
     this.set("address", Value.fromBytes(value));
+  }
+
+  get nonce(): BigInt {
+    let value = this.get("nonce");
+    return value!.toBigInt();
+  }
+
+  set nonce(value: BigInt) {
+    this.set("nonce", Value.fromBigInt(value));
+  }
+
+  get fee(): BigInt {
+    let value = this.get("fee");
+    return value!.toBigInt();
+  }
+
+  set fee(value: BigInt) {
+    this.set("fee", Value.fromBigInt(value));
   }
 }
 

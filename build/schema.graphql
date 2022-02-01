@@ -6,6 +6,8 @@ type SingleTokenHistory @entity {
   createdAt: BigInt!
   token: Token!
   address: Bytes!
+  nonce:BigInt!
+  fee:BigInt!
 }
 
 type Token @entity {
