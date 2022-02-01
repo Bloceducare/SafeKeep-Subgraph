@@ -1,0 +1,5 @@
+{
+    "network": "rinkeby",
+    "factory": "0x1e63ba99ab74D0796dd897CBc58A0e741a8a1acc",
+    "factory-start-block": 9780138
+  }

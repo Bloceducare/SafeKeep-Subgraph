@@ -1,0 +1,56 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: SafeKeep
+    network: {{network}}
+    source:
+      address: "{{factory}}"
+      abi: SafeKeep
+      startBlock: {{factory-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - User
+        - Inheritor
+        - Token
+        - Allocation
+        - Vault
+      abis:
+        - name: SafeKeep
+          file: ./abis/SafeKeep.json
+      eventHandlers:
+        - event: ClaimedEth(indexed uint256,indexed address,uint256)
+          handler: handleClaimedEth
+        - event: EthAllocated(indexed uint256,address[],uint256[])
+          handler: handleEthAllocated
+        - event: EthDeposited(indexed uint256,uint256)
+          handler: handleEthDeposited
+        - event: EthWithdrawn(indexed uint256,uint256)
+          handler: handleEthWithdrawn
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: claimedTokens(indexed uint256,address,indexed address,uint256)
+          handler: handleclaimedTokens
+        - event: inheritorsAdded(indexed uint256,address[],uint256[])
+          handler: handleinheritorsAdded
+        - event: inheritorsAddedVaultCreated(indexed uint256,address[])
+          handler: handleinheritorsAddedVaultCreated
+        - event: inheritorsRemoved(indexed uint256,address[])
+          handler: handleinheritorsRemoved
+        - event: tokenAllocated(indexed uint256,address,address[],uint256[])
+          handler: handletokenAllocated
+        - event: tokensDeposited(indexed uint256,address[],uint256[])
+          handler: handletokensDeposited
+        - event: tokensWithdrawn(indexed uint256,address[],uint256[])
+          handler: handletokensWithdrawn
+        - event: vaultCreated(indexed uint256,address,indexed address,indexed uint256,address[])
+          handler: handlevaultCreated
+        - event: pingVault(uint256)
+          handler: handlepingVault
+        - event: backupAddress(uint256,address)
+          handler: handlebackupAddress
+      file: ./src/mapping.ts
